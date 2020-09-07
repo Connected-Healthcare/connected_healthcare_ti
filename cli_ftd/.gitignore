@@ -1,2 +1,8 @@
 # Folder
 build/
+
+# Intermediate folders
+syscfg/
+
+src/
+configPkg/
