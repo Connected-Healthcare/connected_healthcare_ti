@@ -44,10 +44,12 @@ target_include_directories(openthread_platform_utils_ftd PUBLIC
     "$ENV{SIMPLELINK_13x2_26x2_SDK}/source/third_party/openthread/third_party/mbedtls" 
     "$ENV{SIMPLELINK_13x2_26x2_SDK}/source/third_party/openthread/third_party/mbedtls/repo/include" 
     "$ENV{SIMPLELINK_13x2_26x2_SDK}/source/third_party/openthread/include" 
-    "D:/Workspace/TI/libopenthread_ftd_CC1352P_2_LAUNCHXL_tirtos_gcc/config" 
     "$ENV{SIMPLELINK_13x2_26x2_SDK}/source/third_party/openthread/src/core" 
     "$ENV{SIMPLELINK_13x2_26x2_SDK}/source/third_party/openthread/src" 
     "$ENV{SIMPLELINK_13x2_26x2_SDK}/kernel/tirtos/packages/gnu/targets/arm/libs/install-native/arm-none-eabi/include/newlib-nano" 
     "$ENV{SIMPLELINK_13x2_26x2_SDK}/kernel/tirtos/packages/gnu/targets/arm/libs/install-native/arm-none-eabi/include"
+
+    # CONFIGS
     "$ENV{SIMPLELINK_13x2_26x2_SDK}/source/ti/thread/rtos/${TARGET_BOARD}/thread/libmbedcrypto/config"
+    "$ENV{SIMPLELINK_13x2_26x2_SDK}/source/ti/thread/rtos/${TARGET_BOARD}/thread/libopenthread_ftd/config" 
 )
