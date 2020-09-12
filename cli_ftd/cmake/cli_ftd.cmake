@@ -16,7 +16,7 @@ set(SYSCFG_SOURCES
 )
 
 add_custom_command(OUTPUT ${SYSCFG_SOURCES} 
-    COMMAND "$ENV{CCS_INSTALL_PATH}/ccs/utils/sysconfig_1.4.0/sysconfig_cli.bat" -s "$ENV{SIMPLELINK_13x2_26x2_SDK}/.metadata/product.json" -o "${CMAKE_CURRENT_SOURCE_DIR}/syscfg" --compiler gcc "${CMAKE_CURRENT_SOURCE_DIR}/cli_ftd.syscfg"
+    COMMAND "$ENV{SYSCONFIG_PATH}/sysconfig_cli.bat" -s "$ENV{SIMPLELINK_13x2_26x2_SDK}/.metadata/product.json" -o "${CMAKE_CURRENT_SOURCE_DIR}/syscfg" --compiler gcc "${CMAKE_CURRENT_SOURCE_DIR}/cli_ftd.syscfg"
     COMMENT "Building SYSCFG_SOURCES"
     VERBATIM USES_TERMINAL
 )

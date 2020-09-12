@@ -53,6 +53,8 @@ Connected and Distributed Sensing system for Health Care Facilities
   - ex: `D:/Software/ti/ccs1000/simplelink_cc13x2_26x2_sdk_4_20_01_04`
 - CCS_INSTALL_PATH
   - `D:/Software/ti/ccs1000`
+- SYSCONFIG_PATH
+  - ` D:/Software/ti/ccs1000/ccs/utils/sysconfig_1.4.0`
 - XDCTOOLS_PATH **(with JRE)**
   - `D:/Software/ti/xdctools_3_61_02_27_core`
 
@@ -134,3 +136,5 @@ cmake --build build -j 12
 - Under **Program** -> **Flash Images**
 - Give it the path to the **.elf** binary generated
   - NOTE: The **.elf** binary is generated under the `-B` output folder (in this case the **build** folder as we specified above)
+- Load the elf file first
+  - Verify checks the binary file loaded on the chip

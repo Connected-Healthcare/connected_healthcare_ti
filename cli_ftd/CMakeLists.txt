@@ -23,6 +23,12 @@ else()
   message("XDCTOOLS_PATH: $ENV{XDCTOOLS_PATH}")
 endif()
 
+if (NOT DEFINED ENV{SYSCONFIG_PATH})
+  message(FATAL_ERROR "Set the SYSCONFIG_PATH environment variable. Check the {CCS_INSTALL_PATH}/ccs/utils/ folder for your sysconfig version")
+else()
+  message("SYSCONFIG_PATH: $ENV{SYSCONFIG_PATH}")
+endif()
+
 project(${PROJECT_NAME})
 
 # Libraries
