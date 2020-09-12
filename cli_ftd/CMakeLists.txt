@@ -38,4 +38,5 @@ include(cmake/libopenthread_cli_ftd.cmake)
 include(cmake/libopenthread_ftd.cmake)
 
 # Executable
+set(USER_CLI_FTD_SOURCES "user/user.c")
 include(cmake/cli_ftd.cmake)

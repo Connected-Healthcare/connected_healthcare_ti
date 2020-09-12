@@ -1,4 +1,5 @@
 message("Inside Project folder")
+message("USER_SOURCES: ${USER_CLI_FTD_SOURCES}")
 
 set(USER_PROJECT_NAME "${PROJECT_NAME}.elf")
 
@@ -52,6 +53,9 @@ add_executable(${USER_PROJECT_NAME}
   ${platform_crypto_sources}
   otsupport/otrtosapi.c
   missing/cxxhelpers.c
+
+  # USER SOURCES
+  ${USER_CLI_FTD_SOURCES}
 )
 
 add_dependencies(${USER_PROJECT_NAME} SYSCFG_TARGET XS_TARGET)
@@ -125,6 +129,9 @@ target_include_directories(${USER_PROJECT_NAME} PRIVATE
 
     "$ENV{SIMPLELINK_13x2_26x2_SDK}/source/ti/devices/cc13x2_cc26x2"
     "$ENV{SIMPLELINK_13x2_26x2_SDK}/source/ti/posix/gcc"
+
+    # USER INCLUDES
+    user
 )
 
 target_link_directories(${USER_PROJECT_NAME} PRIVATE

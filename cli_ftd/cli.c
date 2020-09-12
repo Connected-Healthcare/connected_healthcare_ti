@@ -44,6 +44,8 @@
 
  *****************************************************************************/
 
+// clang-format off
+
 #include <openthread/config.h>
 #include <openthread-core-config.h>
 

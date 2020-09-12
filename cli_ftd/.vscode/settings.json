@@ -1,0 +1,9 @@
+{
+  "editor.formatOnSave": true,
+  "cmake.generator": "Ninja",
+  "cmake.configureOnOpen": true,
+  "editor.tabSize": 2,
+  "editor.wordWrap": "wordWrapColumn",
+  "C_Cpp.clang_format_fallbackStyle": "LLVM",
+  "files.insertFinalNewline": true
+}
