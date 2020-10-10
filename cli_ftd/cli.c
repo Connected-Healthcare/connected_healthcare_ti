@@ -73,6 +73,8 @@
 #include "task_config.h"
 #include "ti_drivers_config.h"
 
+#include "user.h"
+
 #if TIOP_OAD
 /* OAD required Header files */
 #include "oad_image_header.h"
@@ -196,7 +198,8 @@ void *cli_task(void *arg0)
     {
         sleep(2);
         /* ignoring unslept return value */
-        GPIO_toggle(CONFIG_GPIO_RLED);
+        GPIO_toggle(CONFIG_GPIO_RLED); // red gpio toggled here
+        user__send_hello(); // send hello world
     }
 }
 
