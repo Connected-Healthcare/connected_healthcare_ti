@@ -9,6 +9,16 @@
   - [Generate](#generate)
   - [Compile](#compile)
   - [Flash with Uniflash](#flash-with-uniflash)
+- [Unit Testing and Mocking](#unit-testing-and-mocking)
+  - [Setting up your Native Toolchain](#setting-up-your-native-toolchain)
+    - [**RECOMMENDED** Chocolatey](#recommended-chocolatey)
+    - [**Long Process** MSYS2](#long-process-msys2)
+  - [Adding your Unit Test](#adding-your-unit-test)
+    - [Root CMakeLists configuration](#root-cmakelists-configuration)
+    - [Custom Test CMakeLists.txt](#custom-test-cmakeliststxt)
+    - [Unit Test Configuration](#unit-test-configuration)
+    - [FFF Configuration](#fff-configuration)
+    - [Testing your Unit Tests](#testing-your-unit-tests)
 
 # Connected Healthcare
 
@@ -138,3 +148,120 @@ cmake --build build -j 12
   - NOTE: The **.elf** binary is generated under the `-B` output folder (in this case the **build** folder as we specified above)
 - Load the elf file first
   - Verify checks the binary file loaded on the chip
+
+# Unit Testing and Mocking
+
+**IMPORTANT** When shifting from TESTING=ON to TESTING=OFF, OR VICE VERSA, **always delete the build folder and reconfigure the project**
+
+## Setting up your Native Toolchain
+
+### **RECOMMENDED** Chocolatey
+
+This is a hassle free process
+
+**https://chocolatey.org/search?q=gcc**
+
+- Install Chocolatey
+- Install GCC MingW Compiler for Windows
+- If you are on MAC or Linux the process might be different (or you might already have the compilers)
+
+### **Long Process** MSYS2
+
+> Not writing this, since I dont encourage it
+
+- [Link here](https://www.msys2.org/)
+
+## Adding your Unit Test
+
+Steps to configure your Unit Testing
+
+**I REPEAT, Always delete your BUILD folder when changing / toggling your TESTING flag**
+
+### Root CMakeLists configuration
+
+- `add_subdirectory(<path_to_your_custom_CMakeLists.txt>)`
+
+### Custom Test CMakeLists.txt
+
+- Example
+```cmake
+
+add_executable(test_exe test_file_one, test_file_two, ...)
+target_link_libraries(test_exe PRIVATE unity fff test_includes)
+
+add_test(NAME test_exe COMMAND test_exe)
+```
+
+### Unit Test Configuration
+
+```cpp
+#include "unity.h"
+#include "fff.h"
+
+// Required
+void setUp() {}
+void tearDown() {}
+
+void test_number_one() {}
+
+void test_number_two() {}
+
+int main() {
+  UNITY_BEGIN();
+
+  RUN_TEST(test_number_one);
+  RUN_TEST(test_number_two);
+
+  return UNITY_END();
+}
+```
+
+### FFF Configuration
+
+- [Read this link perfectly](https://github.com/meekrosoft/fff)
+
+
+
+```cpp
+// ....
+// ....
+
+DEFINE_FFF_GLOBALS;
+
+// Say we have 2 functions to mock
+// void hello_world(const char *data);
+// int hello_to_you(double number_of_people);
+
+FAKE_VOID_FUNC(hello_world, const char *);
+FAKE_VALUE_FUNC(int, hello_to_you, double);
+
+// Required
+void setUp() {
+  RESET_FAKE(hello_world);
+  RESET_FAKE(hello_to_you);
+
+  FFF_RESET_HISTORY();
+}
+void tearDown() {}
+
+void test_number_one() {
+  call_your_main_function();
+
+  TEST_ASSERT_EQUAL_XYZ(hello_world_fake.call_count, 3);
+}
+
+void test_number_two() {
+  call_your_main_function();
+
+  TEST_ASSERT_EQUAL_XYZ(hello_to_you.call_count, 1);
+}
+
+// ....
+// ....
+```
+
+### Testing your Unit Tests
+
+- Click the CTest button
+- Should give you a verbose output on failure
+- Should also mention the number of tests that have passed or failed

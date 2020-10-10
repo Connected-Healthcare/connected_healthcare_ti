@@ -20,7 +20,6 @@ enable_testing()
 include(cmake/unit_testing.cmake)
 
 # Add more Tests here
-add_subdirectory(user/test)
 
 else()
 
@@ -36,7 +35,9 @@ include(cmake/libopenthread_platform_utils_ftd.cmake)
 include(cmake/libopenthread_cli_ftd.cmake)
 include(cmake/libopenthread_ftd.cmake)
 
-set(USER_CLI_FTD_SOURCES "user/user.c")
+set(USER_CLI_FTD_SOURCES 
+    "user/user.c" 
+)
 include(cmake/cli_ftd.cmake)
 
 endif()
