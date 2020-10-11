@@ -43,7 +43,7 @@ add_custom_command(OUTPUT ${XS_SOURCES}
 add_custom_target(XS_TARGET DEPENDS ${XS_SOURCES})
 
 add_executable(${USER_PROJECT_NAME} 
-  CC1352P_2_LAUNCHXL_fxns.c
+  ${TARGET_BOARD}_fxns.c
   cli.c
   main.c
   otstack.c
@@ -98,8 +98,8 @@ target_link_options(${USER_PROJECT_NAME} PRIVATE
   -lm
   -lc
   -lnosys
-  -Wl,-Map,${CMAKE_CURRENT_BINARY_DIR}/cli_ftd_CC1352P_2_LAUNCHXL_tirtos_gcc.map
-  -Wl,-T${CMAKE_CURRENT_SOURCE_DIR}/tirtos/gcc/CC1352P_2_LAUNCHXL_TIRTOS.lds
+  -Wl,-Map,${CMAKE_CURRENT_BINARY_DIR}/cli_ftd_${TARGET_BOARD}_tirtos_gcc.map
+  -Wl,-T${CMAKE_CURRENT_SOURCE_DIR}/tirtos/gcc/${TARGET_BOARD}_TIRTOS.lds
   -Wl,-T${CMAKE_CURRENT_SOURCE_DIR}/configPkg/linker.cmd
 )
 
