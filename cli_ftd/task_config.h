@@ -8,7 +8,7 @@
  Target Device: cc13x2_26x2
 
  ******************************************************************************
- 
+
  Copyright (c) 2017-2020, Texas Instruments Incorporated
  All rights reserved.
 
@@ -40,8 +40,8 @@
  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  ******************************************************************************
- 
- 
+
+
  *****************************************************************************/
 
 #ifndef TASK_CONFIG_H_
@@ -51,7 +51,7 @@
  * Priority of the OpenThread Stack task.
  */
 #ifndef TASK_CONFIG_OT_TASK_PRIORITY
-#define TASK_CONFIG_OT_TASK_PRIORITY    1
+#define TASK_CONFIG_OT_TASK_PRIORITY 1
 #endif
 
 /**
@@ -62,14 +62,14 @@
  *       numbers.
  */
 #ifndef TASK_CONFIG_OT_TASK_STACK_SIZE
-#define TASK_CONFIG_OT_TASK_STACK_SIZE  4096
+#define TASK_CONFIG_OT_TASK_STACK_SIZE 4096
 #endif
 
 /**
  * Priority of the Application task.
  */
 #ifndef TASK_CONFIG_CLI_TASK_PRIORITY
-#define TASK_CONFIG_CLI_TASK_PRIORITY   2
+#define TASK_CONFIG_CLI_TASK_PRIORITY 2
 #endif
 
 /**
@@ -78,6 +78,24 @@
 #ifndef TASK_CONFIG_CLI_TASK_STACK_SIZE
 #define TASK_CONFIG_CLI_TASK_STACK_SIZE 1096
 #endif
+
+// Nikhil
+
+/**
+ * Priority of the Application task.
+ */
+#ifndef TASK_CONFIG_HB_TASK_PRIORITY
+#define TASK_CONFIG_HB_TASK_PRIORITY 2
+#endif
+
+/**
+ * Size of the cli task call stack.
+ */
+#ifndef TASK_CONFIG_HB_TASK_STACK_SIZE
+#define TASK_CONFIG_HB_TASK_STACK_SIZE 4096
+#endif
+
+// End of Nikhil
 
 /**
  * Creation funciton for the OpenThread Stack task.
@@ -89,5 +107,12 @@ extern void OtStack_taskCreate(void);
  */
 extern void cli_taskCreate(void);
 
-#endif /* TASK_CONFIG_H_ */
+// Nikhil
+/**
+ * Creation funciton for the heartbeat application task.
+ */
+extern void heartbeat_taskCreate(void);
 
+// End of Nikhil
+
+#endif /* TASK_CONFIG_H_ */

@@ -40,7 +40,8 @@ include(cmake/libopenthread_cli_ftd.cmake)
 include(cmake/libopenthread_ftd.cmake)
 
 set(USER_CLI_FTD_SOURCES 
-    "user/user.c" 
+    "user/user.c"
+    "heartbeat/heartbeat.c" 
 )
 include(cmake/cli_ftd.cmake)
 
