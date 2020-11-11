@@ -10,6 +10,7 @@ set(PROJECT_NAME "${TARGET_BOARD}_cli_ftd")
 set(TESTING OFF)
 
 include(cmake/env_check.cmake)
+include(cmake/sysconfig_gui.cmake)
 
 if (TESTING)
 
