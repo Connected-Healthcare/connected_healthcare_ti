@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "cwd": "${workspaceFolder}",
+      "executable": "build/CC1352P_2_LAUNCHXL_cli_ftd.elf",
+      "configFiles": [
+        "ti_cc13x2_launchpad.cfg"
+      ],
+      "name": "Debug CC1352P_2",
+      "request": "launch",
+      "type": "cortex-debug",
+      "servertype": "openocd"
+    },
+    {
+      "cwd": "${workspaceFolder}",
+      "executable": "build/CC1352R1_LAUNCHXL_cli_ftd.elf",
+      "configFiles": [
+        "ti_cc13x2_launchpad.cfg"
+      ],
+      "name": "Debug CC1352R1",
+      "request": "launch",
+      "type": "cortex-debug",
+      "servertype": "openocd"
+    }
+  ]
+}
