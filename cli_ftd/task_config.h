@@ -69,7 +69,7 @@
  * Priority of the Application task.
  */
 #ifndef TASK_CONFIG_CLI_TASK_PRIORITY
-#define TASK_CONFIG_CLI_TASK_PRIORITY 2
+#define TASK_CONFIG_CLI_TASK_PRIORITY 3
 #endif
 
 /**
@@ -89,7 +89,7 @@
 #endif
 
 /**
- * Size of the cli task call stack.
+ * Size of the hb task call stack.
  */
 #ifndef TASK_CONFIG_HB_TASK_STACK_SIZE
 #define TASK_CONFIG_HB_TASK_STACK_SIZE 4096

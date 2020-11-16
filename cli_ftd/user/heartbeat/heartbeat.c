@@ -24,6 +24,12 @@
 #include "task_config.h"
 #include "ti_drivers_config.h"
 
+#include <openthread/platform/uart.h>
+
+#include <string.h>
+
+
+
 #if TIOP_OAD
 /* OAD required Header files */
 #include "oad_image_header.h"
@@ -36,6 +42,8 @@
 
 // Import I2C Driver definitions
 #include <ti/drivers/I2C.h>
+
+#include <ti/display/Display.h>
 
 // Define name for an index of an I2C bus
 #define SENSORS 0
@@ -51,30 +59,31 @@ static char heartbeat_stack[TASK_CONFIG_HB_TASK_STACK_SIZE];
 
 void heartbeat__initialize() {
 
-  GPIO_setConfig(CONFIG_PIN_UART_RX, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_STR_HIGH |
+  GPIO_setConfig(CONFIG_PIN_2, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_STR_HIGH |
                                     GPIO_CFG_OUT_HIGH); // RST
-  GPIO_setConfig(CONFIG_PIN_UART_TX, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_STR_HIGH |
+  GPIO_setConfig(CONFIG_PIN_3, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_STR_HIGH |
                                     GPIO_CFG_OUT_LOW); // MFIO
 
-  GPIO_write(CONFIG_PIN_UART_TX, 1); // MFIO                                  
-  GPIO_write(CONFIG_PIN_UART_RX, 0); // RST
+  GPIO_write(CONFIG_PIN_3, 1); // MFIO - Pin 26                                 
+  GPIO_write(CONFIG_PIN_2, 0); // RST - Pin 25
   // delay 10 ms
   usleep(10000);
-  GPIO_write(CONFIG_PIN_UART_RX, 1); // RST
+  GPIO_write(CONFIG_PIN_2, 1); // RST
   sleep(1);
 }
 
-#define DEBUG 0
-#if DEBUG
 void heartbeat__read_sensor_version()
 {
+  Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
+  Display_printf(hSerial, 1, 0, "Hit heartbeat__read_sensor_version()");
    // One-time init of I2C driver
   // I2C_init();
 
   // Bytes to write 0xAA 0xFF 0x03
-uint8_t readBuffer[5]; // Should receive 0xAB 0x00 0x01 0x09 0x00 
+  uint8_t readBuffer[3]; // Should receive 0xAB 0x00 0x01 0x09 0x00 
   uint8_t writeBuffer[2] = {0xFF,0x03};
  
+  memset(&readBuffer, 0 , sizeof(readBuffer));
 
   // initialize optional I2C bus parameters
   I2C_Params params;
@@ -82,46 +91,59 @@ uint8_t readBuffer[5]; // Should receive 0xAB 0x00 0x01 0x09 0x00
   params.bitRate = I2C_400kHz;
 
   // Open I2C bus for usage
-  I2C_Handle i2cHandle = I2C_open(SENSORS, &params);
+  I2C_Handle i2cHandle = I2C_open(CONFIG_I2C_0, &params);
 
   // Initialize slave address of transaction
   I2C_Transaction i2cTransaction = {0};
   
-  i2cTransaction.slaveAddress = 0xAA;
+  i2cTransaction.slaveAddress = 0x55;
   i2cTransaction.writeBuf = writeBuffer;
   i2cTransaction.writeCount = 2;
   i2cTransaction.readBuf = NULL;
   i2cTransaction.readCount = 0;
 
   bool status = I2C_transfer(i2cHandle, &i2cTransaction);
-  // if (status == false) {
-  //   if (i2cTransaction.status == I2C_STATUS_ADDR_NACK) {
-  //         // slave address not acknowledged
-  //   }
-  // }
+  if (status == false) {
+    if (i2cTransaction.status == I2C_STATUS_ADDR_NACK) {
+          // slave address not acknowledged
+          Display_printf(hSerial, 1, 0, "Slave address t1 not acknowledged");
+    }
+  }
+  else{
+     Display_printf(hSerial, 1, 0, "Success");
+  }
 
   // Close I2C
 I2C_close(i2cHandle);
 usleep(6000);
-// I2C_Handle i2cHandle2 = I2C_open(SENSORS, &params);
-// I2C_Transaction i2cTransaction2 = {0};
+I2C_Handle i2cHandle2 = I2C_open(CONFIG_I2C_0, &params);
+I2C_Transaction i2cTransaction2 = {0};
   
-// i2cTransaction2.slaveAddress = 0xAA;
-// i2cTransaction2.writeBuf = NULL;
-// i2cTransaction2.writeCount = 0;
-// i2cTransaction2.readBuf = readBuffer;
-// i2cTransaction2.readCount = 5;
+i2cTransaction2.slaveAddress = 0x55;
+i2cTransaction2.writeBuf = NULL;
+i2cTransaction2.writeCount = 0;
+i2cTransaction2.readBuf = readBuffer;
+i2cTransaction2.readCount = 3;
 
-// bool status2 = I2C_transfer(i2cHandle2, &i2cTransaction2);
-//   if (status2 == false) {
-//     if (i2cTransaction2.status == I2C_STATUS_ADDR_NACK) {
-//           // slave address not acknowledged
-//     }
-//   }
-// I2C_close(i2cHandle2);
+bool status2 = I2C_transfer(i2cHandle2, &i2cTransaction2);
+  if (status2 == false) {
+    if (i2cTransaction2.status == I2C_STATUS_ADDR_NACK) {
+          // slave address not acknowledged
+          Display_printf(hSerial, 1, 0, "Slave address t2 not acknowledged");
+    }
+  }
+  else{
+     Display_printf(hSerial, 1, 0, "Success");
+  }
+I2C_close(i2cHandle2);
+for(int i=0;i<3;i++)
+{
+  Display_printf(hSerial, 1, 0, "%x ",readBuffer[i]);
+  
 }
-
-#endif
+Display_printf(hSerial, 1, 0, "\n");
+Display_close(hSerial);
+}
 
 /**
  * Documented in task_config.h.
@@ -163,12 +185,24 @@ void heartbeat_taskCreate(void)
 void *heartbeat_task(void *arg0)
 {
     GPIO_write(CONFIG_GPIO_GLED, 1);
+    // otPlatUartEnable();
     heartbeat__initialize();
-    // heartbeat__read_sensor_version();
+    // Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
+    // Display_printf(hSerial, 1, 0, "Hit");
+    // Display_close(hSerial);
+    // char buffer[20] = "Hello World!";
+    // uint32_t count = 0;
     while (1)
     {
-        sleep(2);
+        sleep(5);
         /* ignoring unslept return value */
         GPIO_toggle(CONFIG_GPIO_GLED);
+        heartbeat__read_sensor_version();
+
+        // Display_Handle hSerial2 = Display_open(Display_Type_UART, NULL);
+        // Display_printf(hSerial2, 1, 0, "LED Toggle %d", count++);
+        // Display_close(hSerial2);
+        // otPlatUartSend(buffer,sizeof(buffer));
+        // otCliOutputBytes(buffer, sizeof(buffer));
     }
 }

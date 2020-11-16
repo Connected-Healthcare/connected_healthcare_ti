@@ -63,6 +63,7 @@
 #include <ti/drivers/ECJPAKE.h>
 
 #include <ti/drivers/I2C.h>
+#include <ti/display/Display.h>
 
 /* Example/Board Header files */
 #include "ti_drivers_config.h"
@@ -99,9 +100,11 @@ int main(void)
 
     SHA2_init();
 
-   //  I2C_init();
+    I2C_init();
 
-    cli_taskCreate();
+    Display_init();
+
+   //  cli_taskCreate();
 
     heartbeat_taskCreate();
 

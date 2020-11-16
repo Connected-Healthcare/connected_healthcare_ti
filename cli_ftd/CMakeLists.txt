@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.17)
 # User Defines
 
 # ! IMPORTANT, Toggle only between these two options
-# set(TARGET_BOARD "CC1352P_2_LAUNCHXL")
-set(TARGET_BOARD "CC1352R1_LAUNCHXL")
+set(TARGET_BOARD "CC1352P_2_LAUNCHXL")
+# set(TARGET_BOARD "CC1352R1_LAUNCHXL")
 
 set(PROJECT_NAME "${TARGET_BOARD}_cli_ftd")
 set(TESTING OFF)
@@ -42,7 +42,7 @@ include(cmake/libopenthread_ftd.cmake)
 
 set(USER_CLI_FTD_SOURCES 
     "user/user.c"
-    "heartbeat/heartbeat.c" 
+    "user/heartbeat/heartbeat.c" 
 )
 include(cmake/cli_ftd.cmake)
 
