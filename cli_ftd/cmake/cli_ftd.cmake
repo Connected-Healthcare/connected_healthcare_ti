@@ -1,6 +1,10 @@
 message("Inside Project folder")
 message("USER_SOURCES: ${USER_CLI_FTD_SOURCES}")
 
+# Add Third Party library sources here
+set(THIRD_PARTY_SOURCES "third_party/tinyprintf/tinyprintf.c")
+set(THIRD_PARTY_DIRS "third_party/tinyprintf/")
+
 set(USER_PROJECT_NAME "${PROJECT_NAME}.elf")
 
 # Get sources
@@ -56,6 +60,7 @@ add_executable(${USER_PROJECT_NAME}
 
   # USER SOURCES
   ${USER_CLI_FTD_SOURCES}
+  ${THIRD_PARTY_SOURCES}
 )
 
 add_dependencies(${USER_PROJECT_NAME} SYSCFG_TARGET XS_TARGET)
@@ -132,6 +137,7 @@ target_include_directories(${USER_PROJECT_NAME} PRIVATE
 
     # USER INCLUDES
     user
+    ${THIRD_PARTY_DIRS}
 )
 
 target_link_directories(${USER_PROJECT_NAME} PRIVATE
