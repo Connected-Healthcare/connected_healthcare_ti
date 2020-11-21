@@ -98,7 +98,7 @@ int main(void) {
 
   SHA2_init();
 
-  init_tinyprintf();
+  tinyprintf_init();
 
   cli_taskCreate();
 
