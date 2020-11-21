@@ -8,7 +8,7 @@
  Target Device: cc13x2_26x2
 
  ******************************************************************************
- 
+
  Copyright (c) 2017-2020, Texas Instruments Incorporated
  All rights reserved.
 
@@ -40,8 +40,8 @@
  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  ******************************************************************************
- 
- 
+
+
  *****************************************************************************/
 
 /******************************************************************************
@@ -59,8 +59,8 @@
 #include <ti/sysbios/BIOS.h>
 
 #include <ti/drivers/AESECB.h>
-#include <ti/drivers/SHA2.h>
 #include <ti/drivers/ECJPAKE.h>
+#include <ti/drivers/SHA2.h>
 
 #include <ti/drivers/I2C.h>
 #include <ti/display/Display.h>
@@ -70,6 +70,8 @@
 
 /* Private configuration Header files */
 #include "task_config.h"
+
+#include "tinyprintf/tinyprintf_override.h"
 
 /******************************************************************************
  Public Functions
@@ -83,34 +85,34 @@
  *
  * @note This function should never return.
  */
-int main(void)
-{
-    /* Call driver init functions */
-    Board_initGeneral();
+int main(void) {
+  /* Call driver init functions */
+  Board_initGeneral();
 
-    GPIO_init();
+  GPIO_init();
 
-    NVS_init();
+  NVS_init();
 
-    UART_init();
+  UART_init();
 
-    ECJPAKE_init();
+  ECJPAKE_init();
 
-    AESECB_init();
+  AESECB_init();
 
-    SHA2_init();
+  SHA2_init();
 
-    I2C_init();
+  I2C_init();
 
-    Display_init();
+  init_tinyprintf();
 
-   //  cli_taskCreate();
+  Display_init();
 
-    heartbeat_taskCreate();
+  heartbeat_taskCreate();
 
-    /* Start sys/bios, this will never return */
-    BIOS_start();
+  cli_taskCreate();
 
-    return (0);
+  /* Start sys/bios, this will never return */
+  BIOS_start();
+
+  return (0);
 }
-

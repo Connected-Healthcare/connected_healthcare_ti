@@ -1,0 +1,6 @@
+#ifndef USER_TINYPRINTF_TINYPRINTF_OVERRIDE_H_
+#define USER_TINYPRINTF_TINYPRINTF_OVERRIDE_H_
+
+void init_tinyprintf(void);
+
+#endif
