@@ -33,7 +33,8 @@ void test_line_buffer__slash_r_slash_n_case(void) {
   TEST_ASSERT_EQUAL_STRING(line, "ab\r");
 }
 
-// Line buffer should be able to add multiple lines and we should be able to remove them one at a time
+// Line buffer should be able to add multiple lines and we should be able to
+// remove them one at a time
 void test_line_buffer__multiple_lines(void) {
   line_buffer__add_byte(&line_buffer, 'a');
   line_buffer__add_byte(&line_buffer, 'b');
@@ -193,12 +194,14 @@ void test_remove_line_small_input_buffer() {
 
   // Read data when the input_buffer is small
   // NOTE, d gets read and is set to 0
-  TEST_ASSERT_TRUE(line_buffer__remove_line(&line_buffer, input_buffer, sizeof(input_buffer)));
+  TEST_ASSERT_TRUE(line_buffer__remove_line(&line_buffer, input_buffer,
+                                            sizeof(input_buffer)));
   TEST_ASSERT_EQUAL_STRING(input_buffer, "abc");
 
   // Read the remaining data
   // h is read and set to 0
-  TEST_ASSERT_TRUE(line_buffer__remove_line(&line_buffer, input_buffer, sizeof(input_buffer)));
+  TEST_ASSERT_TRUE(line_buffer__remove_line(&line_buffer, input_buffer,
+                                            sizeof(input_buffer)));
   TEST_ASSERT_EQUAL_STRING(input_buffer, "efg");
 }
 
@@ -214,17 +217,38 @@ void test_remove_line_small_input_buffer_opposite() {
   TEST_ASSERT_TRUE(line_buffer__add_byte(&line_buffer, 'f'));
   TEST_ASSERT_TRUE(line_buffer__add_byte(&line_buffer, 'g'));
 
-  TEST_ASSERT_TRUE(line_buffer__remove_line(&line_buffer, input_buffer, sizeof(input_buffer)));
+  TEST_ASSERT_TRUE(line_buffer__remove_line(&line_buffer, input_buffer,
+                                            sizeof(input_buffer)));
   TEST_ASSERT_EQUAL_STRING(input_buffer, "abc");
 
-  // should be false since capacity is not full and we have not received new line
-  TEST_ASSERT_FALSE(line_buffer__remove_line(&line_buffer, input_buffer, sizeof(input_buffer)));
+  // should be false since capacity is not full and we have not received new
+  // line
+  TEST_ASSERT_FALSE(line_buffer__remove_line(&line_buffer, input_buffer,
+                                             sizeof(input_buffer)));
   TEST_ASSERT_EQUAL_STRING(input_buffer, "");
 
   // make the case pass by adding \n
   // we get defg inside input buffer of LENGTH 4
   // we get def\0 (after making the last character 0)
   TEST_ASSERT_TRUE(line_buffer__add_byte(&line_buffer, '\n'));
-  TEST_ASSERT_TRUE(line_buffer__remove_line(&line_buffer, input_buffer, sizeof(input_buffer)));
+  TEST_ASSERT_TRUE(line_buffer__remove_line(&line_buffer, input_buffer,
+                                            sizeof(input_buffer)));
   TEST_ASSERT_EQUAL_STRING(input_buffer, "def");
+}
+
+int main() {
+  UNITY_BEGIN();
+  RUN_TEST(test_line_buffer__nominal_case);
+  RUN_TEST(test_line_buffer__slash_r_slash_n_case);
+  RUN_TEST(test_line_buffer__multiple_lines);
+  RUN_TEST(test_line_buffer__overflow_case);
+  RUN_TEST(test_remove_line_without_newline);
+  RUN_TEST(test_add_byte_overflow);
+  RUN_TEST(test_add_remove_line_after_rollover);
+  RUN_TEST(test_add_byte_two_newlines);
+  RUN_TEST(test_add_byte_rollover_two_newline);
+  RUN_TEST(test_remove_line_empty);
+  RUN_TEST(test_remove_line_small_input_buffer);
+  RUN_TEST(test_remove_line_small_input_buffer_opposite);
+  return UNITY_END();
 }
