@@ -1,3 +1,4 @@
+// clang-format off
 /******************************************************************************
 
  @file uart.c
@@ -96,6 +97,13 @@ static uint8_t const *PlatformUart_sendBuffer = NULL;
  */
 static UART_Handle PlatformUart_uartHandle;
 
+// ! Can be externed, Careful usage required
+// TODO, Find a cleaner solution for this
+// See `user/tinyprintf/tinyprintf_override` for usage
+// We have this variable here since a `uartWriteCallback` is raised when data finishes trasmitting
+// If we transmit while UART is busy the data gets lost
+bool PlatformUart_writeEnabled = true;
+
 /**
  * Callback for when the UART driver finishes reading.
  *
@@ -119,6 +127,7 @@ static void uartWriteCallback(UART_Handle aHandle, void *aBuf, size_t aLen)
     (void)aBuf;
     (void)aLen;
     PlatformUart_sendBuffer = NULL;
+    PlatformUart_writeEnabled = true;
     platformUartSignal(PLATFORM_UART_EVENT_TX_DONE);
 }
 

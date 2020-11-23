@@ -2,8 +2,7 @@ message("Inside Project folder")
 message("USER_SOURCES: ${USER_CLI_FTD_SOURCES}")
 
 # Add Third Party library sources here
-set(THIRD_PARTY_SOURCES "third_party/tinyprintf/tinyprintf.c")
-set(THIRD_PARTY_DIRS "third_party/tinyprintf/")
+include(cmake/cross_third_party.cmake)
 
 set(USER_PROJECT_NAME "${PROJECT_NAME}.elf")
 

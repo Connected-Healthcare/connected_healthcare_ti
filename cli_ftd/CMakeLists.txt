@@ -7,10 +7,11 @@ set(TARGET_BOARD "CC1352P_2_LAUNCHXL")
 # set(TARGET_BOARD "CC1352R1_LAUNCHXL")
 
 set(PROJECT_NAME "${TARGET_BOARD}_cli_ftd")
-set(TESTING OFF)
+option(TESTING OFF)
 
 include(cmake/env_check.cmake)
 include(cmake/sysconfig_gui.cmake)
+include(cmake/test_target.cmake)
 
 if (TESTING)
 
@@ -25,6 +26,7 @@ enable_testing()
 include(cmake/unit_testing.cmake)
 
 # Add more Tests here
+add_subdirectory(third_party/line_buffer/test)
 
 else()
 
