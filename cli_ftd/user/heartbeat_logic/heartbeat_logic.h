@@ -42,7 +42,7 @@
 // Import I2C Driver definitions
 #include <ti/drivers/I2C.h>
 
-#include <ti/display/Display.h>
+#include "tinyprintf.h"
 
 #define WRITE_FIFO_INPUT_BYTE 0x04
 #define DISABLE 0x00

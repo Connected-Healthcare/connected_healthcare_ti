@@ -44,14 +44,9 @@
 // Import I2C Driver definitions
 #include <ti/drivers/I2C.h>
 
-#include <ti/display/Display.h>
+#include "tinyprintf.h"
 
-// Define name for an index of an I2C bus
-#define SENSORS 0
-
- // Define the slave address of device on the SENSORS bus
-#define OPT_ADDR 0xAA
-
+#define GPIO_DEBUG 0
 struct bioData body;
 
 /* Application thread */
@@ -59,96 +54,6 @@ void *heartbeat_task(void *arg0);
 
 /* Application thread call stack */
 static char heartbeat_stack[TASK_CONFIG_HB_TASK_STACK_SIZE];
-
-// Quick test functions
-
-void heartbeat__initialize() {
-
-  GPIO_setConfig(CONFIG_PIN_2, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_STR_HIGH |
-                                    GPIO_CFG_OUT_HIGH); // RST
-  GPIO_setConfig(CONFIG_PIN_3, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_STR_HIGH |
-                                    GPIO_CFG_OUT_LOW); // MFIO
-
-  GPIO_write(CONFIG_PIN_3, 1); // MFIO - Pin 26                                 
-  GPIO_write(CONFIG_PIN_2, 0); // RST - Pin 25
-  // delay 10 ms
-  usleep(10000);
-  GPIO_write(CONFIG_PIN_2, 1); // RST
-  sleep(1);
-}
-
-void heartbeat__read_sensor_version()
-{
-  Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-  Display_printf(hSerial, 1, 0, "Hit heartbeat__read_sensor_version()");
-   // One-time init of I2C driver
-  // I2C_init();
-
-  // Bytes to write 0xAA 0xFF 0x03
-  uint8_t readBuffer[3]; // Should receive 0xAB 0x00 0x01 0x09 0x00 
-  uint8_t writeBuffer[2] = {0xFF,0x03};
- 
-  memset(&readBuffer, 0 , sizeof(readBuffer));
-
-  // initialize optional I2C bus parameters
-  I2C_Params params;
-  I2C_Params_init(&params);
-  params.bitRate = I2C_400kHz;
-
-  // Open I2C bus for usage
-  I2C_Handle i2cHandle = I2C_open(CONFIG_I2C_0, &params);
-
-  // Initialize slave address of transaction
-  I2C_Transaction i2cTransaction = {0};
-  
-  i2cTransaction.slaveAddress = 0x55;
-  i2cTransaction.writeBuf = writeBuffer;
-  i2cTransaction.writeCount = 2;
-  i2cTransaction.readBuf = NULL;
-  i2cTransaction.readCount = 0;
-
-  bool status = I2C_transfer(i2cHandle, &i2cTransaction);
-  if (status == false) {
-    if (i2cTransaction.status == I2C_STATUS_ADDR_NACK) {
-          // slave address not acknowledged
-          Display_printf(hSerial, 1, 0, "Slave address t1 not acknowledged");
-    }
-  }
-  else{
-     Display_printf(hSerial, 1, 0, "Success");
-  }
-
-  // Close I2C
-I2C_close(i2cHandle);
-usleep(6000);
-I2C_Handle i2cHandle2 = I2C_open(CONFIG_I2C_0, &params);
-I2C_Transaction i2cTransaction2 = {0};
-  
-i2cTransaction2.slaveAddress = 0x55;
-i2cTransaction2.writeBuf = NULL;
-i2cTransaction2.writeCount = 0;
-i2cTransaction2.readBuf = readBuffer;
-i2cTransaction2.readCount = 3;
-
-bool status2 = I2C_transfer(i2cHandle2, &i2cTransaction2);
-  if (status2 == false) {
-    if (i2cTransaction2.status == I2C_STATUS_ADDR_NACK) {
-          // slave address not acknowledged
-          Display_printf(hSerial, 1, 0, "Slave address t2 not acknowledged");
-    }
-  }
-  else{
-     Display_printf(hSerial, 1, 0, "Success");
-  }
-I2C_close(i2cHandle2);
-for(int i=0;i<3;i++)
-{
-  Display_printf(hSerial, 1, 0, "%x ",readBuffer[i]);
-  
-}
-Display_printf(hSerial, 1, 0, "\n");
-Display_close(hSerial);
-}
 
 // Heartbeat Task
 
@@ -192,67 +97,51 @@ void heartbeat_taskCreate(void)
 void *heartbeat_task(void *arg0)
 {
     GPIO_write(CONFIG_GPIO_GLED, 1);
-    // otPlatUartEnable();
-    // heartbeat__initialize();
-    // Display_printf(hSerial, 1, 0, "Hit");
-    // char buffer[20] = "Hello World!";
-    // uint32_t count = 0;
+
+
+    #if GPIO_DEBUG
+    uint32_t count = 0;
+    #endif
+    
     int result = begin();
     if (!result){
-    Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-
-    Display_printf(hSerial, 1, 0,"Sensor started!");
-
-    Display_close(hSerial);
+    printf("Sensor started!\r\n");
     }
     else
     {
-    Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-
-      Display_printf(hSerial, 1, 0,"Could not communicate with the sensor!!!");
-
-    Display_close(hSerial);
+    printf("Could not communicate with the sensor!!!\r\n");
 
     }
-    Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-    Display_printf(hSerial, 1, 0,"Configuring Sensor....");
-    Display_close(hSerial);
+    printf("Configuring Sensor....\r\n");
     int error = configBpm(MODE_ONE); // Configuring just the BPM settings. 
     if(!error){
-      Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-    Display_printf(hSerial, 1, 0,"Sensor configured.");
-    Display_close(hSerial);
+    printf("Sensor configured.\r\n");
   }
   else {
-     Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-     Display_printf(hSerial, 1, 0,"Error configuring sensor.");
-     Display_printf(hSerial, 1, 0,"Error: %d", error); 
-     Display_close(hSerial);
+    printf("Error configuring sensor.\r\n");
+    printf("Error: %d\r\n", error); 
   }
 
   // Data lags a bit behind the sensor, if you're finger is on the sensor when
   // it's being configured this delay will give some time for the data to catch
   // up. 
   sleep(4);
+
     while (1)
     {
-        // sleep(5);
+        #if GPIO_DEBUG
+        sleep(1);
         /* ignoring unslept return value */
+        printf("LED Toggle %ld \r\n", count++);
+        #endif
         GPIO_toggle(CONFIG_GPIO_GLED);
-        // heartbeat__read_sensor_version();
 
         body = readBpm();
-        Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-        Display_printf(hSerial, 1, 0,"Heartrate: %d", body.heartRate);
-        Display_printf(hSerial, 1, 0,"Confidence: %d",body.confidence);
-        Display_printf(hSerial, 1, 0,"Oxygen: %d",body.oxygen);
-        Display_printf(hSerial, 1, 0,"Status: %d",body.status);
-        Display_close(hSerial); 
+        printf("Heartrate: %d\r\n", body.heartRate);
+        printf("Confidence: %d\r\n",body.confidence);
+        printf("Oxygen: %d\r\n",body.oxygen);
+        printf("Status: %d\r\n",body.status);
+        printf("\r\n");
         usleep(250000); // 250 millseconds
-        // Display_Handle hSerial2 = Display_open(Display_Type_UART, NULL);
-        // Display_printf(hSerial2, 1, 0, "LED Toggle %d", count++);
-        // Display_close(hSerial2);
-        // otPlatUartSend(buffer,sizeof(buffer));
-        // otCliOutputBytes(buffer, sizeof(buffer));
     }
 }

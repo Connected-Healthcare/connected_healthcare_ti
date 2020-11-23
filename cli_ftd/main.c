@@ -63,7 +63,6 @@
 #include <ti/drivers/SHA2.h>
 
 #include <ti/drivers/I2C.h>
-#include <ti/display/Display.h>
 
 /* Example/Board Header files */
 #include "ti_drivers_config.h"
@@ -103,13 +102,11 @@ int main(void) {
 
   I2C_init();
 
-//   init_tinyprintf();
-
-  Display_init();
+  tinyprintf_init();
 
   heartbeat_taskCreate();
 
-//   cli_taskCreate();
+  cli_taskCreate();
 
   /* Start sys/bios, this will never return */
   BIOS_start();

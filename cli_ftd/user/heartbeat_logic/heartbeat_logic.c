@@ -1,13 +1,13 @@
 #include "heartbeat_logic.h"
 
+#define DEBUG_PRINTFS 0
+
 // Variables ------------
 uint8_t bpmArr[MAXFAST_ARRAY_SIZE];
 uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA];
 uint8_t senArr[MAX30101_LED_ARRAY];
 uint8_t bpmSenArr[MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY];
 uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA + MAX30101_LED_ARRAY];
-
-// Variables
 
 const uint8_t BIO_ADDRESS = 0x55;
 // uint8_t _resetPin;
@@ -284,8 +284,9 @@ static void heartbeat__initialize_application_mode() {
 uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte, uint8_t _enableByte) {
 uint8_t statusByte;
 
-  Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-  Display_printf(hSerial, 1, 0, "Hit enableWrite()");
+  #if DEBUG_PRINTFS
+  printf("Hit enableWrite()\r\n");
+  #endif
 
   uint8_t number_of_bytes_to_read = 1;
   uint8_t number_of_bytes_to_write = 3;
@@ -323,11 +324,15 @@ uint8_t statusByte;
   if (status == false) {
     if (i2cTransaction.status == I2C_STATUS_ADDR_NACK) {
           // slave address not acknowledged
-          Display_printf(hSerial, 1, 0, "Slave address t1 not acknowledged");
+          #if DEBUG_PRINTFS
+          printf("Slave address t1 not acknowledged\r\n");
+          #endif
     }
   }
   else{
-     Display_printf(hSerial, 1, 0, "Success");
+    #if DEBUG_PRINTFS
+    printf("Success\r\n");
+    #endif
   }
 
   // Close I2C
@@ -346,20 +351,27 @@ bool status2 = I2C_transfer(i2cHandle2, &i2cTransaction2);
   if (status2 == false) {
     if (i2cTransaction2.status == I2C_STATUS_ADDR_NACK) {
           // slave address not acknowledged
-          Display_printf(hSerial, 1, 0, "Slave address t2 not acknowledged");
+          #if DEBUG_PRINTFS
+          printf("Slave address t2 not acknowledged\r\n");
+          #endif
     }
   }
   else{
-     Display_printf(hSerial, 1, 0, "Success");
+    #if DEBUG_PRINTFS
+    printf("Success\r\n");
+    #endif
   }
 I2C_close(i2cHandle2);
 for(int i=0;i<number_of_bytes_to_read;i++)
 {
-  Display_printf(hSerial, 1, 0, "%x ",readBuffer[i]);
+  #if DEBUG_PRINTFS
+  printf("%x\r\n",readBuffer[i]);
+  #endif
   
 }
-Display_printf(hSerial, 1, 0, "\n");
-Display_close(hSerial);
+#if DEBUG_PRINTFS
+printf("\r\n");
+#endif
 
   statusByte = readBuffer[0];
   
@@ -371,9 +383,9 @@ uint8_t writeByte_1(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte)
   // uint8_t returnByte;
   uint8_t statusByte;
 
-  Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-  Display_printf(hSerial, 1, 0, "Hit writeByte_1()");
-  Display_close(hSerial);
+#if DEBUG_PRINTFS
+  printf("Hit writeByte_1()\r\n");
+  #endif
 
   uint8_t number_of_bytes_to_read = 1;
   uint8_t number_of_bytes_to_write = 3;
@@ -388,7 +400,6 @@ uint8_t writeByte_1(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte)
   heartbeat__i2c_transaction(readBuffer, writeBuffer, number_of_bytes_to_read,number_of_bytes_to_write);
 
   statusByte = readBuffer[0];
-  // returnByte = readBuffer[1];
   
   return statusByte;
 }
@@ -399,9 +410,10 @@ uint8_t writeByte_3(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte,
 // uint8_t returnByte;
   uint8_t statusByte;
 
-  Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-  Display_printf(hSerial, 1, 0, "Hit writeByte_1()");
-  Display_close(hSerial);
+  #if DEBUG_PRINTFS
+  printf("Hit writeByte_1()\r\n");
+  #endif
+
   uint8_t number_of_bytes_to_read = 1;
   uint8_t number_of_bytes_to_write = 5;
 
@@ -429,9 +441,9 @@ uint8_t readByte_1(uint8_t _familyByte, uint8_t _indexByte)
   uint8_t returnByte;
   uint8_t statusByte;
 
-  Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-  Display_printf(hSerial, 1, 0, "Hit readByte_1()");
-  Display_close(hSerial);
+  #if DEBUG_PRINTFS
+  printf("Hit readByte_1()\r\n");
+  #endif
 
   uint8_t number_of_bytes_to_read = 2;
   uint8_t number_of_bytes_to_write = 2;
@@ -459,9 +471,9 @@ uint8_t readByte_2(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte) 
   uint8_t returnByte;
   uint8_t statusByte;
 
-  Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-  Display_printf(hSerial, 1, 0, "Hit readByte_2()");
-  Display_close(hSerial);
+  #if DEBUG_PRINTFS
+  printf("Hit readByte_2()\r\n");
+  #endif
 
   uint8_t number_of_bytes_to_read = 2;
   uint8_t number_of_bytes_to_write = 3;
@@ -487,8 +499,9 @@ uint8_t readByte_2(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte) 
 
 void heartbeat__i2c_transaction(uint8_t *read_buffer, uint8_t *write_buffer, int read_size, int write_size)
 {
-  Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-  Display_printf(hSerial, 1, 0, "Hit heartbeat__i2c_transaction");
+  #if DEBUG_PRINTFS
+  printf("Hit heartbeat__i2c_transaction\r\n");
+  #endif
 
   uint8_t number_of_bytes_to_read = read_size;
   uint8_t number_of_bytes_to_write = write_size;
@@ -516,11 +529,15 @@ void heartbeat__i2c_transaction(uint8_t *read_buffer, uint8_t *write_buffer, int
   if (status == false) {
     if (i2cTransaction.status == I2C_STATUS_ADDR_NACK) {
           // slave address not acknowledged
-          Display_printf(hSerial, 1, 0, "Slave address not acknowledged on i2c write");
+          #if DEBUG_PRINTFS
+          printf("Slave address not acknowledged on i2c write\r\n");
+          #endif
     }
   }
   else{
-     Display_printf(hSerial, 1, 0, "Write Success");
+    #if DEBUG_PRINTFS
+    printf("Write Success\r\n");
+    #endif
   }
 
   // Close I2C
@@ -539,20 +556,27 @@ void heartbeat__i2c_transaction(uint8_t *read_buffer, uint8_t *write_buffer, int
     if (status2 == false) {
       if (i2cTransaction2.status == I2C_STATUS_ADDR_NACK) {
             // slave address not acknowledged
-            Display_printf(hSerial, 1, 0, "Slave address not acknowledged on i2c write");
+            #if DEBUG_PRINTFS
+            printf("Slave address not acknowledged on i2c write\r\n");
+            #endif
       }
     }
     else{
-      Display_printf(hSerial, 1, 0, "Read Success");
+      #if DEBUG_PRINTFS
+      printf("Read Success\r\n");
+      #endif
     }
   I2C_close(i2cHandle2);
   for(int i=0;i<number_of_bytes_to_read;i++)
   {
-    Display_printf(hSerial, 1, 0, "%x ",read_buffer[i]);
+    #if DEBUG_PRINTFS
+    printf("%x\r\n",read_buffer[i]);
+    #endif
     
   }
-  Display_printf(hSerial, 1, 0, "\n");
-  Display_close(hSerial);
+  #if DEBUG_PRINTFS
+  printf("\r\n");
+  #endif
 }
                                           
 uint8_t readFillArray(uint8_t _familyByte, uint8_t _indexByte, uint8_t arraySize, uint8_t* array) 
@@ -560,9 +584,9 @@ uint8_t readFillArray(uint8_t _familyByte, uint8_t _indexByte, uint8_t arraySize
   // uint8_t returnByte;
   uint8_t statusByte;
 
-  Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
-  Display_printf(hSerial, 1, 0, "Hit readFillArray()");
-  Display_close(hSerial);
+  #if DEBUG_PRINTFS
+  printf("Hit readFillArray()\r\n");
+  #endif
 
   uint8_t number_of_bytes_to_read = (1 + arraySize);
   uint8_t number_of_bytes_to_write = 2;
