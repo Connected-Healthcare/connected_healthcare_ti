@@ -5,8 +5,8 @@
 #include <stddef.h>
 
 /* POSIX Header files */
-#include <sched.h>
 #include <pthread.h>
+#include <sched.h>
 #include <unistd.h>
 
 /* RTOS Header files */
@@ -17,8 +17,8 @@
 #include <openthread/instance.h>
 
 /* OpenThread Internal/Example Header files */
-#include "otsupport/otrtosapi.h"
 #include "otsupport/otinstance.h"
+#include "otsupport/otrtosapi.h"
 
 /* Example/Board Header files */
 #include "task_config.h"
@@ -30,15 +30,14 @@
 
 #include "user/heartbeat_logic/heartbeat_logic.h"
 
-
 #if TIOP_OAD
 /* OAD required Header files */
 #include "oad_image_header.h"
 /* Low level driverlib files (non-rtos) */
 #include <ti/devices/DeviceFamily.h>
-#include DeviceFamily_constructPath(driverlib/flash.h)
-#include DeviceFamily_constructPath(driverlib/sys_ctrl.h)
-#include DeviceFamily_constructPath(driverlib/cpu.h)
+#include DeviceFamily_constructPath(driverlib / flash.h)
+#include DeviceFamily_constructPath(driverlib / sys_ctrl.h)
+#include DeviceFamily_constructPath(driverlib / cpu.h)
 #endif /* TIOP_OAD */
 
 // Import I2C Driver definitions
@@ -60,88 +59,79 @@ static char heartbeat_stack[TASK_CONFIG_HB_TASK_STACK_SIZE];
 /**
  * Documented in task_config.h.
  */
-void heartbeat_taskCreate(void)
-{
-    pthread_t           thread;
-    pthread_attr_t      pAttrs;
-    struct sched_param  priParam;
-    int                 retc;
+void heartbeat_taskCreate(void) {
+  pthread_t thread;
+  pthread_attr_t pAttrs;
+  struct sched_param priParam;
+  int retc;
 
-    retc = pthread_attr_init(&pAttrs);
-    assert(retc == 0);
+  retc = pthread_attr_init(&pAttrs);
+  assert(retc == 0);
 
-    retc = pthread_attr_setdetachstate(&pAttrs, PTHREAD_CREATE_DETACHED);
-    assert(retc == 0);
+  retc = pthread_attr_setdetachstate(&pAttrs, PTHREAD_CREATE_DETACHED);
+  assert(retc == 0);
 
-    priParam.sched_priority = TASK_CONFIG_HB_TASK_PRIORITY;
-    retc = pthread_attr_setschedparam(&pAttrs, &priParam);
-    assert(retc == 0);
+  priParam.sched_priority = TASK_CONFIG_HB_TASK_PRIORITY;
+  retc = pthread_attr_setschedparam(&pAttrs, &priParam);
+  assert(retc == 0);
 
-    retc = pthread_attr_setstack(&pAttrs, (void *)heartbeat_stack,
-                                 TASK_CONFIG_HB_TASK_STACK_SIZE);
-    assert(retc == 0);
+  retc = pthread_attr_setstack(&pAttrs, (void *)heartbeat_stack,
+                               TASK_CONFIG_HB_TASK_STACK_SIZE);
+  assert(retc == 0);
 
-    retc = pthread_create(&thread, &pAttrs, heartbeat_task, NULL);
-    assert(retc == 0);
+  retc = pthread_create(&thread, &pAttrs, heartbeat_task, NULL);
+  assert(retc == 0);
 
-    retc = pthread_attr_destroy(&pAttrs);
-    assert(retc == 0);
+  retc = pthread_attr_destroy(&pAttrs);
+  assert(retc == 0);
 
-    (void) retc;
+  (void)retc;
 
-    GPIO_setConfig(CONFIG_GPIO_GLED, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_STR_HIGH |
-                                    GPIO_CFG_OUT_LOW);
-  
+  GPIO_setConfig(CONFIG_GPIO_GLED,
+                 GPIO_CFG_OUT_STD | GPIO_CFG_OUT_STR_HIGH | GPIO_CFG_OUT_LOW);
 }
 
-void *heartbeat_task(void *arg0)
-{
-    GPIO_write(CONFIG_GPIO_GLED, 1);
+void *heartbeat_task(void *arg0) {
+  GPIO_write(CONFIG_GPIO_GLED, 1);
 
+#if GPIO_DEBUG
+  uint32_t count = 0;
+#endif
 
-    #if GPIO_DEBUG
-    uint32_t count = 0;
-    #endif
-    
-    int result = begin();
-    if (!result){
+  int result = begin();
+  if (!result) {
     printf("Sensor started!\r\n");
-    }
-    else
-    {
+  } else {
     printf("Could not communicate with the sensor!!!\r\n");
-
-    }
-    printf("Configuring Sensor....\r\n");
-    int error = configBpm(MODE_ONE); // Configuring just the BPM settings. 
-    if(!error){
-    printf("Sensor configured.\r\n");
   }
-  else {
+  printf("Configuring Sensor....\r\n");
+  int error = configBpm(MODE_ONE); // Configuring just the BPM settings.
+  if (!error) {
+    printf("Sensor configured.\r\n");
+  } else {
     printf("Error configuring sensor.\r\n");
-    printf("Error: %d\r\n", error); 
+    printf("Error: %d\r\n", error);
   }
 
   // Data lags a bit behind the sensor, if you're finger is on the sensor when
   // it's being configured this delay will give some time for the data to catch
-  // up. 
+  // up.
   sleep(4);
 
-    while (1)
-    {
-        #if GPIO_DEBUG
-        sleep(1);
-        /* ignoring unslept return value */
-        printf("LED Toggle %ld \r\n", count++);
-        #endif
-        GPIO_toggle(CONFIG_GPIO_GLED);
+  while (1) {
+#if GPIO_DEBUG
+    sleep(1);
+    /* ignoring unslept return value */
+    printf("LED Toggle %ld \r\n", count++);
+#endif
+    GPIO_toggle(CONFIG_GPIO_GLED);
 
-        body = readBpm();
-        printf("Heartrate: %d\r\n", body.heartRate);
-        printf("Confidence: %d\r\n",body.confidence);
-        printf("Oxygen: %d\r\n",body.oxygen);
-        printf("Status: %d\r\n",body.status);
-        printf("\r\n");
-        usleep(250000); // 250 millseconds
-    }
+    body = readBpm();
+    printf("Heartrate: %d\r\n", body.heartRate);
+    printf("Confidence: %d\r\n", body.confidence);
+    printf("Oxygen: %d\r\n", body.oxygen);
+    printf("Status: %d\r\n", body.status);
+    printf("\r\n");
+    usleep(250000); // 250 millseconds
+  }
 }
