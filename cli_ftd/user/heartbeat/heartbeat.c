@@ -28,6 +28,7 @@
 
 #include <string.h>
 
+#include "user/heartbeat_logic/heartbeat_logic.h"
 
 
 #if TIOP_OAD
@@ -51,11 +52,15 @@
  // Define the slave address of device on the SENSORS bus
 #define OPT_ADDR 0xAA
 
+struct bioData body;
+
 /* Application thread */
 void *heartbeat_task(void *arg0);
 
 /* Application thread call stack */
 static char heartbeat_stack[TASK_CONFIG_HB_TASK_STACK_SIZE];
+
+// Quick test functions
 
 void heartbeat__initialize() {
 
@@ -145,6 +150,8 @@ Display_printf(hSerial, 1, 0, "\n");
 Display_close(hSerial);
 }
 
+// Heartbeat Task
+
 /**
  * Documented in task_config.h.
  */
@@ -186,19 +193,62 @@ void *heartbeat_task(void *arg0)
 {
     GPIO_write(CONFIG_GPIO_GLED, 1);
     // otPlatUartEnable();
-    heartbeat__initialize();
-    // Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
+    // heartbeat__initialize();
     // Display_printf(hSerial, 1, 0, "Hit");
-    // Display_close(hSerial);
     // char buffer[20] = "Hello World!";
     // uint32_t count = 0;
+    int result = begin();
+    if (!result){
+    Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
+
+    Display_printf(hSerial, 1, 0,"Sensor started!");
+
+    Display_close(hSerial);
+    }
+    else
+    {
+    Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
+
+      Display_printf(hSerial, 1, 0,"Could not communicate with the sensor!!!");
+
+    Display_close(hSerial);
+
+    }
+    Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
+    Display_printf(hSerial, 1, 0,"Configuring Sensor....");
+    Display_close(hSerial);
+    int error = configBpm(MODE_ONE); // Configuring just the BPM settings. 
+    if(!error){
+      Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
+    Display_printf(hSerial, 1, 0,"Sensor configured.");
+    Display_close(hSerial);
+  }
+  else {
+     Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
+     Display_printf(hSerial, 1, 0,"Error configuring sensor.");
+     Display_printf(hSerial, 1, 0,"Error: %d", error); 
+     Display_close(hSerial);
+  }
+
+  // Data lags a bit behind the sensor, if you're finger is on the sensor when
+  // it's being configured this delay will give some time for the data to catch
+  // up. 
+  sleep(4);
     while (1)
     {
-        sleep(5);
+        // sleep(5);
         /* ignoring unslept return value */
         GPIO_toggle(CONFIG_GPIO_GLED);
-        heartbeat__read_sensor_version();
+        // heartbeat__read_sensor_version();
 
+        body = readBpm();
+        Display_Handle hSerial = Display_open(Display_Type_UART, NULL);
+        Display_printf(hSerial, 1, 0,"Heartrate: %d", body.heartRate);
+        Display_printf(hSerial, 1, 0,"Confidence: %d",body.confidence);
+        Display_printf(hSerial, 1, 0,"Oxygen: %d",body.oxygen);
+        Display_printf(hSerial, 1, 0,"Status: %d",body.status);
+        Display_close(hSerial); 
+        usleep(250000); // 250 millseconds
         // Display_Handle hSerial2 = Display_open(Display_Type_UART, NULL);
         // Display_printf(hSerial2, 1, 0, "LED Toggle %d", count++);
         // Display_close(hSerial2);

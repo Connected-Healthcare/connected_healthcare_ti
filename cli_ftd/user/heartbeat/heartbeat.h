@@ -1,4 +1,4 @@
-#ifndef HEARTBEAT_HEARTBEAT_H_
-#define HEARTBEAT_HEARTBEAT_H_
+#ifndef USER_HEARTBEAT_H_
+#define USER_HEARTBEAT_H_
 
 #endif

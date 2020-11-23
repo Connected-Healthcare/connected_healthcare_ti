@@ -103,13 +103,13 @@ int main(void) {
 
   I2C_init();
 
-  init_tinyprintf();
+//   init_tinyprintf();
 
   Display_init();
 
   heartbeat_taskCreate();
 
-  cli_taskCreate();
+//   cli_taskCreate();
 
   /* Start sys/bios, this will never return */
   BIOS_start();

@@ -42,7 +42,8 @@ include(cmake/libopenthread_ftd.cmake)
 
 set(USER_CLI_FTD_SOURCES 
     "user/user.c"
-    "user/heartbeat/heartbeat.c" 
+    "user/heartbeat/heartbeat.c"
+    "user/heartbeat_logic/heartbeat_logic.c" 
     "user/tinyprintf/tinyprintf_override.c"
 )
 include(cmake/cli_ftd.cmake)
