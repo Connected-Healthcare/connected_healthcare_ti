@@ -9,6 +9,9 @@ set(TARGET_BOARD "CC1352P_2_LAUNCHXL")
 set(PROJECT_NAME "${TARGET_BOARD}_cli_ftd")
 option(TESTING OFF)
 
+# Constants
+set(SYSCFG_FILE "${TARGET_BOARD}/cli_ftd.syscfg")
+
 include(cmake/env_check.cmake)
 include(cmake/sysconfig_gui.cmake)
 include(cmake/test_target.cmake)
