@@ -121,6 +121,7 @@ target_compile_definitions(${USER_PROJECT_NAME} PRIVATE
     OPENTHREAD_PROJECT_CORE_CONFIG_FILE="openthread-core-cc1352-config-ide.h" 
     TIOP_ENABLE_UART=1 
     DeviceFamily_CC13X2
+    ${TARGET_BOARD}
 )
 
 target_include_directories(${USER_PROJECT_NAME} PRIVATE 
