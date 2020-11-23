@@ -7,9 +7,9 @@ include(cmake/cross_third_party.cmake)
 set(USER_PROJECT_NAME "${PROJECT_NAME}.elf")
 
 # Get sources
-file(GLOB platform_sources CONFIGURE_DEPENDS platform/*.c)
-file(GLOB platform_nv_sources CONFIGURE_DEPENDS platform/nv/*.c)
-file(GLOB platform_crypto_sources CONFIGURE_DEPENDS platform/crypto/*.c)
+file(GLOB platform_sources CONFIGURE_DEPENDS ${TARGET_BOARD}/platform/*.c)
+file(GLOB platform_nv_sources CONFIGURE_DEPENDS ${TARGET_BOARD}/platform/nv/*.c)
+file(GLOB platform_crypto_sources CONFIGURE_DEPENDS ${TARGET_BOARD}/platform/crypto/*.c)
 
 # SYSCFG
 set(SYSCFG_SOURCES 
@@ -20,7 +20,7 @@ set(SYSCFG_SOURCES
 )
 
 add_custom_command(OUTPUT ${SYSCFG_SOURCES} 
-    COMMAND "$ENV{SYSCONFIG_PATH}/sysconfig_cli.bat" -s "$ENV{SIMPLELINK_13x2_26x2_SDK}/.metadata/product.json" -o "${CMAKE_CURRENT_SOURCE_DIR}/syscfg" --compiler gcc "${CMAKE_CURRENT_SOURCE_DIR}/cli_ftd.syscfg"
+    COMMAND "$ENV{SYSCONFIG_PATH}/sysconfig_cli.bat" -s "$ENV{SIMPLELINK_13x2_26x2_SDK}/.metadata/product.json" -o "${CMAKE_CURRENT_SOURCE_DIR}/syscfg" --compiler gcc "${CMAKE_CURRENT_SOURCE_DIR}/${SYSCFG_FILE}"
     COMMENT "Building SYSCFG_SOURCES"
     VERBATIM USES_TERMINAL
 )
@@ -46,7 +46,7 @@ add_custom_command(OUTPUT ${XS_SOURCES}
 add_custom_target(XS_TARGET DEPENDS ${XS_SOURCES})
 
 add_executable(${USER_PROJECT_NAME} 
-  ${TARGET_BOARD}_fxns.c
+  ${TARGET_BOARD}/${TARGET_BOARD}_fxns.c
   cli.c
   main.c
   otstack.c
@@ -54,8 +54,8 @@ add_executable(${USER_PROJECT_NAME}
   ${platform_sources}
   ${platform_nv_sources}
   ${platform_crypto_sources}
-  otsupport/otrtosapi.c
-  missing/cxxhelpers.c
+  ${TARGET_BOARD}/otsupport/otrtosapi.c
+  ${TARGET_BOARD}/missing/cxxhelpers.c
 
   # USER SOURCES
   ${USER_CLI_FTD_SOURCES}
@@ -103,7 +103,7 @@ target_link_options(${USER_PROJECT_NAME} PRIVATE
   -lc
   -lnosys
   -Wl,-Map,${CMAKE_CURRENT_BINARY_DIR}/cli_ftd_${TARGET_BOARD}_tirtos_gcc.map
-  -Wl,-T${CMAKE_CURRENT_SOURCE_DIR}/tirtos/gcc/${TARGET_BOARD}_TIRTOS.lds
+  -Wl,-T${CMAKE_CURRENT_SOURCE_DIR}/${TARGET_BOARD}/tirtos/gcc/${TARGET_BOARD}_TIRTOS.lds
   -Wl,-T${CMAKE_CURRENT_SOURCE_DIR}/configPkg/linker.cmd
 )
 
@@ -125,6 +125,7 @@ target_compile_definitions(${USER_PROJECT_NAME} PRIVATE
 
 target_include_directories(${USER_PROJECT_NAME} PRIVATE 
     .
+    ${TARGET_BOARD}
     syscfg
     platform
     platform/nv
