@@ -62,6 +62,8 @@
 #include <ti/drivers/ECJPAKE.h>
 #include <ti/drivers/SHA2.h>
 
+#include <ti/drivers/I2C.h>
+
 /* Example/Board Header files */
 #include "ti_drivers_config.h"
 
@@ -99,6 +101,11 @@ int main(void) {
   SHA2_init();
 
   tinyprintf_init();
+
+#ifdef CC1352P_2_LAUNCHXL
+  I2C_init();
+  heartbeat_taskCreate();
+#endif
 
   cli_taskCreate();
 

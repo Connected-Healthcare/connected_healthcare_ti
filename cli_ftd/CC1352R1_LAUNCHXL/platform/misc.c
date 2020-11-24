@@ -1,14 +1,14 @@
 /******************************************************************************
 
- @file task_config.h
+ @file misc.c
 
- @brief Definitions of the RTOS task priorities and stack sizes
+ @brief platform specific misc items.
 
  Group: CMCU, LPC
  Target Device: cc13x2_26x2
 
  ******************************************************************************
-
+ 
  Copyright (c) 2017-2020, Texas Instruments Incorporated
  All rights reserved.
 
@@ -40,79 +40,67 @@
  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  ******************************************************************************
-
-
+ 
+ 
  *****************************************************************************/
 
-#ifndef TASK_CONFIG_H_
-#define TASK_CONFIG_H_
+#include <openthread/config.h>
+
+#include <openthread/platform/misc.h>
+
+#include <ti/devices/DeviceFamily.h>
+#include DeviceFamily_constructPath(driverlib/sys_ctrl.h)
 
 /**
- * Priority of the OpenThread Stack task.
+ * Function documented in platform/misc.h
  */
-#ifndef TASK_CONFIG_OT_TASK_PRIORITY
-#define TASK_CONFIG_OT_TASK_PRIORITY 1
-#endif
+void otPlatReset(otInstance *aInstance)
+{
+    (void)aInstance;
+    SysCtrlSystemReset();
+}
 
 /**
- * Size of the OpenThread Stack task call stack.
- *
- * NOTE: last stack peak tested at 3280 bytes (conformance test 8.2.1 CCS
- *       toolchain 2020-6-9). Adding 20% and rounding to largest 1K for round
- *       numbers.
+ * Function documented in platform/misc.h
  */
-#ifndef TASK_CONFIG_OT_TASK_STACK_SIZE
-#define TASK_CONFIG_OT_TASK_STACK_SIZE 4096
-#endif
+otPlatResetReason otPlatGetResetReason(otInstance *aInstance)
+{
+    (void)aInstance;
 
-/**
- * Priority of the Application task.
- */
-#ifndef TASK_CONFIG_CLI_TASK_PRIORITY
-#define TASK_CONFIG_CLI_TASK_PRIORITY 3
-#endif
+    switch (SysCtrlResetSourceGet())
+    {
+        case RSTSRC_PWR_ON:
+        {
+            return OT_PLAT_RESET_REASON_POWER_ON;
+        }
 
-/**
- * Size of the cli task call stack.
- */
-#ifndef TASK_CONFIG_CLI_TASK_STACK_SIZE
-#define TASK_CONFIG_CLI_TASK_STACK_SIZE 1096
-#endif
+        case RSTSRC_PIN_RESET:
+        {
+            return OT_PLAT_RESET_REASON_EXTERNAL;
+        }
 
-// Nikhil
+        case RSTSRC_VDDS_LOSS:
+        case RSTSRC_VDDR_LOSS:
+        case RSTSRC_CLK_LOSS:
+        {
+            return OT_PLAT_RESET_REASON_CRASH;
+        }
 
-/**
- * Priority of the Application task.
- */
-#ifndef TASK_CONFIG_HB_TASK_PRIORITY
-#define TASK_CONFIG_HB_TASK_PRIORITY 2
-#endif
+        case RSTSRC_WARMRESET:
+        case RSTSRC_SYSRESET:
+        case RSTSRC_WAKEUP_FROM_SHUTDOWN:
+        {
+            return OT_PLAT_RESET_REASON_SOFTWARE;
+        }
 
-/**
- * Size of the hb task call stack.
- */
-#ifndef TASK_CONFIG_HB_TASK_STACK_SIZE
-#define TASK_CONFIG_HB_TASK_STACK_SIZE 4096
-#endif
+        default:
+        {
+            return OT_PLAT_RESET_REASON_UNKNOWN;
+        }
+    }
+}
 
-// End of Nikhil
-
-/**
- * Creation funciton for the OpenThread Stack task.
- */
-extern void OtStack_taskCreate(void);
-
-/**
- * Creation funciton for the cli application task.
- */
-extern void cli_taskCreate(void);
-
-// Nikhil
-/**
- * Creation funciton for the heartbeat application task.
- */
-extern void heartbeat_taskCreate(void);
-
-// End of Nikhil
-
-#endif /* TASK_CONFIG_H_ */
+void otPlatWakeHost(void)
+{
+    // TODO: implement an operation to wake the host from sleep state.
+}

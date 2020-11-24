@@ -1,14 +1,14 @@
 /******************************************************************************
 
- @file task_config.h
+ @file crpto_misc.c 
 
- @brief Definitions of the RTOS task priorities and stack sizes
+ @brief mbedTLS debug function patch
 
  Group: CMCU, LPC
  Target Device: cc13x2_26x2
 
  ******************************************************************************
-
+ 
  Copyright (c) 2017-2020, Texas Instruments Incorporated
  All rights reserved.
 
@@ -40,79 +40,51 @@
  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  ******************************************************************************
-
-
+ 
+ 
  *****************************************************************************/
-
-#ifndef TASK_CONFIG_H_
-#define TASK_CONFIG_H_
-
+ 
 /**
- * Priority of the OpenThread Stack task.
- */
-#ifndef TASK_CONFIG_OT_TASK_PRIORITY
-#define TASK_CONFIG_OT_TASK_PRIORITY 1
+ * when disabling MBEDTLS_SSL_DEBUG_ALL and MBEDTLS_DEBUG_C in
+ * openthread/etc/ti/CC26X2R1_LAUNCHXL/ccs/config/mbedtls_config-cc1352 or
+ * openthread/etc/ti/CC26X2R1_LAUNCHXL/ccs/config/mbedtls_config-cc2652
+ * during linkage, we saw the error
+ * `<Linking>`
+ 
+ * undefined                   first referenced
+ * symbol                         in file     
+ * ---------                   ----------------
+ * mbedtls_debug_set_threshold <whole-program> 
+ 
+ * The root cause is that 
+ * 1. mbedtls_debug_set_threshold is called in dlts.cpp (openthead)
+ * 2. when MBEDTLS_SSL_DEBUG_ALL and MBEDTLS_DEBUG_C are disabled, this function
+ *   is not built in mbedTLS lib
+ * 3. during the link, you will see this error.
+ 
+ * In order to fix this issue.
+ * 1. when MBEDTLS_SSL_DEBUG_ALL and MBEDTLS_DEBUG_C are disabled, don't call this
+ *   function. This means we need to modify the openthread code.
+ * 2. when MBEDTLS_SSL_DEBUG_ALL and MBEDTLS_DEBUG_C are disabled, in mbedTLS we build
+ *   dummy mbedtls_debug_set_threshold. This means we need to modify the mbedTLS
+ *   code.
+ * 3. in application code, we provide the dummy mbedtls_debug_set_threshold.
+ 
+ * We prefer the option 3.
+ 
+ */ 
+ 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "mbedtls/config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
 #endif
+ 
+#if !defined(MBEDTLS_DEBUG_C)
 
-/**
- * Size of the OpenThread Stack task call stack.
- *
- * NOTE: last stack peak tested at 3280 bytes (conformance test 8.2.1 CCS
- *       toolchain 2020-6-9). Adding 20% and rounding to largest 1K for round
- *       numbers.
- */
-#ifndef TASK_CONFIG_OT_TASK_STACK_SIZE
-#define TASK_CONFIG_OT_TASK_STACK_SIZE 4096
+void mbedtls_debug_set_threshold( int threshold )
+{
+    (void) threshold;
+}
+
 #endif
-
-/**
- * Priority of the Application task.
- */
-#ifndef TASK_CONFIG_CLI_TASK_PRIORITY
-#define TASK_CONFIG_CLI_TASK_PRIORITY 3
-#endif
-
-/**
- * Size of the cli task call stack.
- */
-#ifndef TASK_CONFIG_CLI_TASK_STACK_SIZE
-#define TASK_CONFIG_CLI_TASK_STACK_SIZE 1096
-#endif
-
-// Nikhil
-
-/**
- * Priority of the Application task.
- */
-#ifndef TASK_CONFIG_HB_TASK_PRIORITY
-#define TASK_CONFIG_HB_TASK_PRIORITY 2
-#endif
-
-/**
- * Size of the hb task call stack.
- */
-#ifndef TASK_CONFIG_HB_TASK_STACK_SIZE
-#define TASK_CONFIG_HB_TASK_STACK_SIZE 4096
-#endif
-
-// End of Nikhil
-
-/**
- * Creation funciton for the OpenThread Stack task.
- */
-extern void OtStack_taskCreate(void);
-
-/**
- * Creation funciton for the cli application task.
- */
-extern void cli_taskCreate(void);
-
-// Nikhil
-/**
- * Creation funciton for the heartbeat application task.
- */
-extern void heartbeat_taskCreate(void);
-
-// End of Nikhil
-
-#endif /* TASK_CONFIG_H_ */
