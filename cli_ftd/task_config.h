@@ -69,7 +69,7 @@
  * Priority of the Application task.
  */
 #ifndef TASK_CONFIG_CLI_TASK_PRIORITY
-#define TASK_CONFIG_CLI_TASK_PRIORITY 3
+#define TASK_CONFIG_CLI_TASK_PRIORITY 4
 #endif
 
 /**
@@ -98,6 +98,20 @@
 // End of Nikhil
 
 /**
+ * Priority of the UDP Communication task.
+ */
+#ifndef TASK_CONFIG_UDP_COMM_TASK_PRIORITY
+#define TASK_CONFIG_UDP_COMM_TASK_PRIORITY 3
+#endif
+
+/**
+ * Size of the UDP Communication task call stack.
+ */
+#ifndef TASK_CONFIG_UDP_COMM_TASK_STACK_SIZE
+#define TASK_CONFIG_UDP_COMM_TASK_STACK_SIZE 1096
+#endif
+
+/**
  * Creation funciton for the OpenThread Stack task.
  */
 extern void OtStack_taskCreate(void);
@@ -114,5 +128,10 @@ extern void cli_taskCreate(void);
 extern void heartbeat_taskCreate(void);
 
 // End of Nikhil
+
+/**
+ * Creation function for the UDP communication task.
+ */
+extern void udp_comm_taskCreate();
 
 #endif /* TASK_CONFIG_H_ */

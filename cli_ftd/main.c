@@ -109,6 +109,8 @@ int main(void) {
 
   cli_taskCreate();
 
+  udp_comm_taskCreate();
+
   /* Start sys/bios, this will never return */
   BIOS_start();
 
