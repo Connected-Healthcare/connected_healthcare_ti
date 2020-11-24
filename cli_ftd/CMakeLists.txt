@@ -45,12 +45,27 @@ include(cmake/libopenthread_platform_utils_ftd.cmake)
 include(cmake/libopenthread_cli_ftd.cmake)
 include(cmake/libopenthread_ftd.cmake)
 
+# Common sources
 set(USER_CLI_FTD_SOURCES 
     "user/user.c"
-    "user/heartbeat/heartbeat.c"
-    "user/heartbeat_logic/heartbeat_logic.c" 
     "user/tinyprintf/tinyprintf_override.c"
 )
+
+# CC1352P_2 specific code
+if (${TARGET_BOARD} STREQUAL "CC1352P_2_LAUNCHXL")
+set(USER_CLI_FTD_SOURCES "${USER_CLI_FTD_SOURCES}"
+    "user/heartbeat/heartbeat.c"
+    "user/heartbeat_logic/heartbeat_logic.c" 
+)
+endif()
+
+# CC1352R1 specific code
+if (${TARGET_BOARD} STREQUAL "CC1352R1_LAUNCHXL")
+set(USER_CLI_FTD_SOURCES "${USER_CLI_FTD_SOURCES}")
+endif()
+
+message("Data: ${USER_CLI_FTD_SOURCES}")
+
 include(cmake/cli_ftd.cmake)
 
 endif()
