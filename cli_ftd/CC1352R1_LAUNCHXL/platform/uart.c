@@ -124,6 +124,7 @@ static void uartWriteCallback(UART_Handle aHandle, void *aBuf, size_t aLen) {
   (void)aBuf;
   (void)aLen;
   PlatformUart_sendBuffer = NULL;
+  PlatformUart_writeEnabled = true;
   platformUartSignal(PLATFORM_UART_EVENT_TX_DONE);
 }
 
