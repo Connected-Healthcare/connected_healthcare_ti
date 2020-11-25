@@ -69,8 +69,11 @@
 
 /* Private configuration Header files */
 #include "task_config.h"
-
 #include "tinyprintf/tinyprintf_override.h"
+
+#ifdef CC1352R1_LAUNCHXL
+#include "sensor/stm32/stm32_i2c.h"
+#endif
 
 /******************************************************************************
  Public Functions
@@ -102,8 +105,13 @@ int main(void) {
 
   tinyprintf_init();
 
-#ifdef CC1352P_2_LAUNCHXL
   I2C_init();
+
+#ifdef CC1352R1_LAUNCHXL
+  stm32__init();
+#endif
+
+#ifdef CC1352P_2_LAUNCHXL
   heartbeat_taskCreate();
 #endif
 

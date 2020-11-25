@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.17)
 # User Defines
 
 # ! IMPORTANT, Toggle only between these two options
-set(TARGET_BOARD "CC1352P_2_LAUNCHXL")
-# set(TARGET_BOARD "CC1352R1_LAUNCHXL")
+# set(TARGET_BOARD "CC1352P_2_LAUNCHXL")
+set(TARGET_BOARD "CC1352R1_LAUNCHXL")
 
 set(PROJECT_NAME "${TARGET_BOARD}_cli_ftd")
 option(TESTING OFF)
@@ -61,7 +61,9 @@ endif()
 
 # CC1352R1 specific code
 if (${TARGET_BOARD} STREQUAL "CC1352R1_LAUNCHXL")
-set(USER_CLI_FTD_SOURCES "${USER_CLI_FTD_SOURCES}")
+set(USER_CLI_FTD_SOURCES "${USER_CLI_FTD_SOURCES}"
+    "user/sensor/stm32/stm32_i2c.c"
+)
 endif()
 
 message("Data: ${USER_CLI_FTD_SOURCES}")
