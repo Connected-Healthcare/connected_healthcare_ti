@@ -70,6 +70,8 @@
 /* Private configuration Header files */
 #include "task_config.h"
 
+#include "user\heartbeat\heartbeat.h"
+
 #include "tinyprintf/tinyprintf_override.h"
 
 /******************************************************************************

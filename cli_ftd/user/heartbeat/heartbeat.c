@@ -17,28 +17,14 @@
 #include <openthread/instance.h>
 
 /* OpenThread Internal/Example Header files */
-#include "otsupport/otinstance.h"
-#include "otsupport/otrtosapi.h"
 
 /* Example/Board Header files */
 #include "task_config.h"
 #include "ti_drivers_config.h"
 
-#include <openthread/platform/uart.h>
-
 #include <string.h>
 
 #include "user/heartbeat_logic/heartbeat_logic.h"
-
-#if TIOP_OAD
-/* OAD required Header files */
-#include "oad_image_header.h"
-/* Low level driverlib files (non-rtos) */
-#include <ti/devices/DeviceFamily.h>
-#include DeviceFamily_constructPath(driverlib / flash.h)
-#include DeviceFamily_constructPath(driverlib / sys_ctrl.h)
-#include DeviceFamily_constructPath(driverlib / cpu.h)
-#endif /* TIOP_OAD */
 
 // Import I2C Driver definitions
 #include <ti/drivers/I2C.h>
@@ -46,7 +32,10 @@
 #include "tinyprintf.h"
 
 #define GPIO_DEBUG 0
-struct bioData body;
+static struct bioData body;
+
+static const uint32_t DELAY_AFTER_HEARTBEAT_INITIALIZE_SECONDS = 4;
+static const uint32_t HEARTBEAT_TASK_DELAY_MICROSECONDS = 250000;
 
 /* Application thread */
 void *heartbeat_task(void *arg0);
@@ -116,7 +105,7 @@ void *heartbeat_task(void *arg0) {
   // Data lags a bit behind the sensor, if you're finger is on the sensor when
   // it's being configured this delay will give some time for the data to catch
   // up.
-  sleep(4);
+  sleep(DELAY_AFTER_HEARTBEAT_INITIALIZE_SECONDS);
 
   while (1) {
 #if GPIO_DEBUG
@@ -132,6 +121,6 @@ void *heartbeat_task(void *arg0) {
     printf("Oxygen: %d\r\n", body.oxygen);
     printf("Status: %d\r\n", body.status);
     printf("\r\n");
-    usleep(250000); // 250 millseconds
+    usleep(HEARTBEAT_TASK_DELAY_MICROSECONDS); // 250 millseconds
   }
 }
