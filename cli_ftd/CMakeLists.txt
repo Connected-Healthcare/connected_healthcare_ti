@@ -49,6 +49,7 @@ include(cmake/libopenthread_ftd.cmake)
 set(USER_CLI_FTD_SOURCES 
     "user/user.c"
     "user/tinyprintf/tinyprintf_override.c"
+    "user/utility/float.c"
 )
 
 # CC1352P_2 specific code
