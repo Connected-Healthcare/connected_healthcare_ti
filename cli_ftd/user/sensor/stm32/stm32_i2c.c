@@ -6,7 +6,7 @@
 #include "tinyprintf.h"
 #include "utility/float.h"
 
-#define DEBUG_PRINT 1
+#define DEBUG_PRINT 0
 #if DEBUG_PRINT
 #define debugPrintf(...) printf(__VA_ARGS__)
 #else
