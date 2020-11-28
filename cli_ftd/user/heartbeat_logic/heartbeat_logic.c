@@ -3,28 +3,54 @@
 #define DEBUG_PRINTFS 0
 
 #if DEBUG_PRINTFS
-#define debugPrintf(x, ...) printf(x, __VA_ARGS__)
+#define debugPrintf(...) printf(__VA_ARGS__)
 #else
-#define debugPrintf(x, ...)
+#define debugPrintf(...)
 #endif
 // Variables ------------
 static uint8_t bpmArr[MAXFAST_ARRAY_SIZE];
 static uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA];
-// static uint8_t senArr[MAX30101_LED_ARRAY];
-// static uint8_t bpmSenArr[MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY];
-// static uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA +
-// MAX30101_LED_ARRAY];
 
 static const uint8_t BIO_ADDRESS = 0x55;
-// uint8_t _resetPin;
-// uint8_t _mfioPin;
-// static uint8_t _address = 0x55;
-// static uint32_t _writeCoefArr[3];
 static uint8_t _userSelectedMode;
 static uint8_t _sampleRate = 100;
 
 // Static Function Declarations
 static void heartbeat__initialize_application_mode();
+
+static void heartbeat__i2c_transaction(uint8_t *read_buffer,
+                                       uint8_t *write_buffer, int read_size,
+                                       int write_size);
+
+// This function uses the given family, index, and write byte to enable
+// the given sensor.
+static uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte,
+                           uint8_t _enableByte);
+
+// This function uses the given family, index, and write byte to communicate
+// with the MAX32664 which in turn communicates with downward sensors. There
+// are two steps demonstrated in this function. First a write to the MCU
+// indicating what you want to do, a delay, and then a read to confirm positive
+// transmission.
+static uint8_t writeByte_1(uint8_t _familyByte, uint8_t _indexByte,
+                           uint8_t _writeByte);
+// This function handles all read commands or stated another way, all
+// information requests. It starts a request by writing the family byte, index
+// byte, and delays 60 microseconds, during which the MAX32664 retrieves the
+// requested information. An I-squared-C request is then issued, and the
+// information is read and returned.
+static uint8_t readByte_1(uint8_t _familyByte, uint8_t _indexByte);
+
+// This function is exactly as the one above except it accepts a Write Byte as
+// a paramter. It starts a request by writing the family byte, index byte, and
+// write byte to the MAX32664, delays 60 microseconds, during which
+// the MAX32664 retrieves the requested information. A I-squared-C request is
+// then issued, and the information is read and returned.
+static uint8_t readByte_2(uint8_t _familyByte, uint8_t _indexByte,
+                          uint8_t _writeByte);
+
+static uint8_t readFillArray(uint8_t _familyByte, uint8_t _indexByte,
+                             uint8_t arraySize, uint8_t *array);
 
 // Heartbeat High-level APIs
 
@@ -290,8 +316,8 @@ static void heartbeat__initialize_application_mode() {
   sleep(1);
 }
 
-uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte,
-                    uint8_t _enableByte) {
+static uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte,
+                           uint8_t _enableByte) {
   uint8_t statusByte;
 
   debugPrintf("Hit enableWrite()\r\n");
@@ -371,8 +397,8 @@ uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte,
   return statusByte;
 }
 
-uint8_t writeByte_1(uint8_t _familyByte, uint8_t _indexByte,
-                    uint8_t _writeByte) {
+static uint8_t writeByte_1(uint8_t _familyByte, uint8_t _indexByte,
+                           uint8_t _writeByte) {
   // uint8_t returnByte;
   uint8_t statusByte;
 
@@ -396,35 +422,7 @@ uint8_t writeByte_1(uint8_t _familyByte, uint8_t _indexByte,
   return statusByte;
 }
 
-uint8_t writeByte_3(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte,
-                    uint16_t _val) {
-  // uint8_t returnByte;
-  uint8_t statusByte;
-
-  debugPrintf("Hit writeByte_1()\r\n");
-
-  uint8_t number_of_bytes_to_read = 1;
-  uint8_t number_of_bytes_to_write = 5;
-
-  uint8_t readBuffer[number_of_bytes_to_read];
-  uint8_t writeBuffer[number_of_bytes_to_write];
-  memset(writeBuffer, 0, sizeof(writeBuffer));
-  writeBuffer[0] = _familyByte;
-  writeBuffer[1] = _indexByte;
-  writeBuffer[2] = _writeByte;
-  writeBuffer[3] = ((_val >> 8) & 0xFF); // MSB
-  writeBuffer[4] = (_val & 0xFF);        // LSB
-
-  heartbeat__i2c_transaction(readBuffer, writeBuffer, number_of_bytes_to_read,
-                             number_of_bytes_to_write);
-
-  statusByte = readBuffer[0];
-  // returnByte = readBuffer[1];
-
-  return statusByte;
-}
-
-uint8_t readByte_1(uint8_t _familyByte, uint8_t _indexByte) {
+static uint8_t readByte_1(uint8_t _familyByte, uint8_t _indexByte) {
   uint8_t returnByte;
   uint8_t statusByte;
 
@@ -452,8 +450,8 @@ uint8_t readByte_1(uint8_t _familyByte, uint8_t _indexByte) {
   return returnByte;
 }
 
-uint8_t readByte_2(uint8_t _familyByte, uint8_t _indexByte,
-                   uint8_t _writeByte) {
+static uint8_t readByte_2(uint8_t _familyByte, uint8_t _indexByte,
+                          uint8_t _writeByte) {
   uint8_t returnByte;
   uint8_t statusByte;
 
@@ -481,8 +479,9 @@ uint8_t readByte_2(uint8_t _familyByte, uint8_t _indexByte,
   return returnByte;
 }
 
-void heartbeat__i2c_transaction(uint8_t *read_buffer, uint8_t *write_buffer,
-                                int read_size, int write_size) {
+static void heartbeat__i2c_transaction(uint8_t *read_buffer,
+                                       uint8_t *write_buffer, int read_size,
+                                       int write_size) {
   debugPrintf("Hit heartbeat__i2c_transaction\r\n");
 
   uint8_t number_of_bytes_to_read = read_size;

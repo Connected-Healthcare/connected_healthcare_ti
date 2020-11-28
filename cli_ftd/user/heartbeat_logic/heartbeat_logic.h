@@ -305,53 +305,6 @@ enum IDENTITY_INDEX_BYTES {
 
 };
 
-// Functions------------
-
-// This function uses the given family, index, and write byte to enable
-// the given sensor.
-uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte,
-                    uint8_t _enableByte);
-
-// This function uses the given family, index, and write byte to communicate
-// with the MAX32664 which in turn communicates with downward sensors. There
-// are two steps demonstrated in this function. First a write to the MCU
-// indicating what you want to do, a delay, and then a read to confirm positive
-// transmission.
-uint8_t writeByte_1(uint8_t _familyByte, uint8_t _indexByte,
-                    uint8_t _writeByte);
-
-// This function sends is simliar to the one above and sends info to the
-// MAX32664 but takes an additional uint8_t as a paramter. Again there is the
-// write of the specific bytes followed by a read to confirm positive
-// transmission.
-// uint8_t writeByte_2(uint8_t, uint8_t, uint8_t, uint8_t);
-
-// This function is the same as the function above and uses the given family,
-// index, and write byte, but also takes a 16 bit integer as a paramter to
-// communicate with the MAX32664 which in turn communicates with downward
-// sensors. There are two steps demonstrated in this function. First a write to
-// the MCU indicating what you want to do, a delay, and then a read to confirm
-// positive transmission.
-uint8_t writeByte_3(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte,
-                    uint16_t _val);
-
-// This function handles all read commands or stated another way, all
-// information requests. It starts a request by writing the family byte, index
-// byte, and delays 60 microseconds, during which the MAX32664 retrieves the
-// requested information. An I-squared-C request is then issued, and the
-// information is read and returned.
-uint8_t readByte_1(uint8_t _familyByte, uint8_t _indexByte);
-
-// This function is exactly as the one above except it accepts a Write Byte as
-// a paramter. It starts a request by writing the family byte, index byte, and
-// write byte to the MAX32664, delays 60 microseconds, during which
-// the MAX32664 retrieves the requested information. A I-squared-C request is
-// then issued, and the information is read and returned.
-uint8_t readByte_2(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte);
-
-uint8_t readFillArray(uint8_t _familyByte, uint8_t _indexByte,
-                      uint8_t arraySize, uint8_t *array);
-
 // Functions ------------
 
 // Family Byte: READ_DEVICE_MODE (0x02) Index Byte: 0x00, Write Byte: 0x00
@@ -425,8 +378,5 @@ uint8_t agcAlgoControl(uint8_t enable);
 // This function enables (one) or disables (zero) the wrist heart rate monitor
 // algorithm.
 uint8_t maximFastAlgoControl(uint8_t mode);
-
-void heartbeat__i2c_transaction(uint8_t *read_buffer, uint8_t *write_buffer,
-                                int read_size, int write_size);
 
 #endif
