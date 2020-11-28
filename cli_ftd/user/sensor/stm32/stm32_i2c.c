@@ -4,6 +4,14 @@
 #include <ti/drivers/I2C.h>
 
 #include "tinyprintf.h"
+#include "utility/float.h"
+
+#define DEBUG_PRINT 0
+#if DEBUG_PRINT
+#define debugPrintf(x, ...) printf(x, __VA_ARGS__)
+#else
+#define debugPrintf(x, ...)
+#endif
 
 // Constants
 #define ARR_SIZE 4
@@ -29,6 +37,7 @@ static I2C_Transaction transaction;
 // Static functions
 static uint32_t stm32__convert_to_uint32(uint8_t *data);
 static uint16_t stm32__convert_to_uint16(uint8_t *data);
+static float stm32__convert_uint32_float_structure_to_float(uint32_t data);
 
 void stm32__init(void) {
   I2C_Params_init(&params);
@@ -67,32 +76,32 @@ uint16_t stm32__sgp30_voc(void) {
   return stm32__convert_to_uint16(readBuf);
 }
 
-// TODO, Convert from uint32_t to float
 float stm32__hts221_temperature(void) {
   uint8_t readBuf[ARR_SIZE] = {0};
   stm32__read_data(HTS221_TEMPERATURE_ADDRESS, readBuf, ARR_SIZE);
-  return (float)stm32__convert_to_uint32(readBuf);
+  uint32_t raw_data = stm32__convert_to_uint32(readBuf);
+  return stm32__convert_uint32_float_structure_to_float(raw_data);
 }
 
-// TODO, Convert from uint32_t to float
 float stm32__hts221_humidity(void) {
   uint8_t readBuf[ARR_SIZE] = {0};
   stm32__read_data(HTS221_HUMIDITY_ADDRESS, readBuf, ARR_SIZE);
-  return (float)stm32__convert_to_uint32(readBuf);
+  uint32_t raw_data = stm32__convert_to_uint32(readBuf);
+  return stm32__convert_uint32_float_structure_to_float(raw_data);
 }
 
-// TODO, Convert from uint32_t to float
 float stm32__lps22hb_temperature(void) {
   uint8_t readBuf[ARR_SIZE] = {0};
   stm32__read_data(LPS22HB_TEMPERATURE_ADDRESS, readBuf, ARR_SIZE);
-  return (float)stm32__convert_to_uint32(readBuf);
+  uint32_t raw_data = stm32__convert_to_uint32(readBuf);
+  return stm32__convert_uint32_float_structure_to_float(raw_data);
 }
 
-// TODO, Convert from uint32_t to float
 float stm32__lps22hb_pressure(void) {
   uint8_t readBuf[ARR_SIZE] = {0};
   stm32__read_data(LPS22HB_PRESSURE_ADDRESS, readBuf, ARR_SIZE);
-  return (float)stm32__convert_to_uint32(readBuf);
+  uint32_t raw_data = stm32__convert_to_uint32(readBuf);
+  return stm32__convert_uint32_float_structure_to_float(raw_data);
 }
 
 uint32_t stm32__time_of_flight(void) {
@@ -130,7 +139,7 @@ bool stm32__write_data(uint8_t write_address, uint8_t data) {
   // Open I2C bus for usage
   I2C_Handle handle = I2C_open(CONFIG_I2C_0, &params);
   if (!handle) {
-    printf("I2C did not open\r\n");
+    debugPrintf("%s", "I2C did not open\r\n");
     return false;
   }
 
@@ -146,11 +155,11 @@ bool stm32__write_data(uint8_t write_address, uint8_t data) {
   bool ret = I2C_transfer(handle, &transaction);
   if (!ret) {
     // I2C_STATUS_SUCCESS;
-    printf("I2C Unsuccessful transfer\r\n");
+    debugPrintf("%s", "I2C Unsuccessful transfer\r\n");
     I2C_close(handle);
     return false;
   }
-  printf("Status: %d\r\n", transaction.status);
+  debugPrintf("Status: %d\r\n", transaction.status);
 
   I2C_close(handle);
   return true;
@@ -161,7 +170,7 @@ bool stm32__read_data(uint8_t write_address, uint8_t readBuf[],
   // Open I2C bus for usage
   I2C_Handle handle = I2C_open(CONFIG_I2C_0, &params);
   if (!handle) {
-    printf("I2C did not open\r\n");
+    debugPrintf("%s", "I2C did not open\r\n");
     return false;
   }
 
@@ -177,11 +186,11 @@ bool stm32__read_data(uint8_t write_address, uint8_t readBuf[],
   bool ret = I2C_transfer(handle, &transaction);
   if (!ret) {
     // I2C_STATUS_SUCCESS;
-    printf("I2C Unsuccessful transfer\r\n");
+    debugPrintf("%s", "I2C Unsuccessful transfer\r\n");
     I2C_close(handle);
     return false;
   }
-  printf("Status: %d\r\n", transaction.status);
+  debugPrintf("Status: %d\r\n", transaction.status);
 
   I2C_close(handle);
   return true;
@@ -189,10 +198,27 @@ bool stm32__read_data(uint8_t write_address, uint8_t readBuf[],
 
 // Static functions
 static uint32_t stm32__convert_to_uint32(uint8_t *data) {
-  return ((data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0]);
+  uint32_t rdata =
+      ((data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0]);
   ;
+  debugPrintf("%lx\r\n", rdata);
+  return rdata;
 }
 
 static uint16_t stm32__convert_to_uint16(uint8_t *data) {
-  return ((data[1] << 8) | data[0]);
+  uint16_t rdata = ((data[1] << 8) | data[0]);
+  debugPrintf("%x\r\n", rdata);
+  return rdata;
+}
+
+static float stm32__convert_uint32_float_structure_to_float(uint32_t data) {
+  float *rdata = (float *)&data;
+
+#if DEBUG_PRINT
+  char buffer[32] = {0};
+  float__convert_float_to_string((*rdata), buffer);
+  debugPrintf("%s\r\n", buffer);
+#endif
+
+  return (*rdata);
 }
