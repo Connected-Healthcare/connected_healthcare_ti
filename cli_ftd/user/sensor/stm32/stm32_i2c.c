@@ -6,11 +6,11 @@
 #include "tinyprintf.h"
 #include "utility/float.h"
 
-#define DEBUG_PRINT 0
+#define DEBUG_PRINT 1
 #if DEBUG_PRINT
-#define debugPrintf(x, ...) printf(x, __VA_ARGS__)
+#define debugPrintf(...) printf(__VA_ARGS__)
 #else
-#define debugPrintf(x, ...)
+#define debugPrintf(...)
 #endif
 
 // Constants
@@ -139,7 +139,7 @@ bool stm32__write_data(uint8_t write_address, uint8_t data) {
   // Open I2C bus for usage
   I2C_Handle handle = I2C_open(CONFIG_I2C_0, &params);
   if (!handle) {
-    debugPrintf("%s", "I2C did not open\r\n");
+    debugPrintf("I2C did not open\r\n");
     return false;
   }
 
@@ -155,7 +155,7 @@ bool stm32__write_data(uint8_t write_address, uint8_t data) {
   bool ret = I2C_transfer(handle, &transaction);
   if (!ret) {
     // I2C_STATUS_SUCCESS;
-    debugPrintf("%s", "I2C Unsuccessful transfer\r\n");
+    debugPrintf("I2C Unsuccessful transfer\r\n");
     I2C_close(handle);
     return false;
   }
@@ -170,7 +170,7 @@ bool stm32__read_data(uint8_t write_address, uint8_t readBuf[],
   // Open I2C bus for usage
   I2C_Handle handle = I2C_open(CONFIG_I2C_0, &params);
   if (!handle) {
-    debugPrintf("%s", "I2C did not open\r\n");
+    debugPrintf("I2C did not open\r\n");
     return false;
   }
 
@@ -186,7 +186,7 @@ bool stm32__read_data(uint8_t write_address, uint8_t readBuf[],
   bool ret = I2C_transfer(handle, &transaction);
   if (!ret) {
     // I2C_STATUS_SUCCESS;
-    debugPrintf("%s", "I2C Unsuccessful transfer\r\n");
+    debugPrintf("I2C Unsuccessful transfer\r\n");
     I2C_close(handle);
     return false;
   }
