@@ -28,6 +28,8 @@ const GPIO1     = GPIO.addInstance();
 const GPIO2     = GPIO.addInstance();
 const GPIO3     = GPIO.addInstance();
 const GPIO4     = GPIO.addInstance();
+const I2C       = scripting.addModule("/ti/drivers/I2C", {}, false);
+const I2C1      = I2C.addInstance();
 const NVS       = scripting.addModule("/ti/drivers/NVS");
 const NVS1      = NVS.addInstance();
 const Power     = scripting.addModule("/ti/drivers/Power");
@@ -94,6 +96,10 @@ GPIO4.$name                      = "CONFIG_GPIO_RLED";
 GPIO4.pinInstance.$name          = "CONFIG_PIN_RLED";
 GPIO4.pinInstance.outputStrength = "Maximum";
 
+I2C1.$name                = "CONFIG_I2C_0";
+I2C1.sdaPinInstance.$name = "CONFIG_PIN_0";
+I2C1.clkPinInstance.$name = "CONFIG_PIN_1";
+
 NVS1.$name                    = "CONFIG_NVSINTERNAL";
 NVS1.internalFlash.$name      = "ti_drivers_nvs_NVSCC26XX0";
 NVS1.internalFlash.regionBase = 0x52000;
@@ -125,3 +131,6 @@ GPIO1.gpioPin.$suggestSolution            = "boosterpack.13";
 GPIO2.gpioPin.$suggestSolution            = "boosterpack.12";
 GPIO3.gpioPin.$suggestSolution            = "boosterpack.40";
 GPIO4.gpioPin.$suggestSolution            = "boosterpack.39";
+I2C1.i2c.$suggestSolution                 = "I2C0";
+I2C1.i2c.sdaPin.$suggestSolution          = "boosterpack.10";
+I2C1.i2c.sclPin.$suggestSolution          = "boosterpack.9";
