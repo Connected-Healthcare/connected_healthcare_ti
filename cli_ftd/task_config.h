@@ -79,24 +79,6 @@
 #define TASK_CONFIG_CLI_TASK_STACK_SIZE 1096
 #endif
 
-// Nikhil
-
-/**
- * Priority of the Application task.
- */
-#ifndef TASK_CONFIG_HB_TASK_PRIORITY
-#define TASK_CONFIG_HB_TASK_PRIORITY 2
-#endif
-
-/**
- * Size of the hb task call stack.
- */
-#ifndef TASK_CONFIG_HB_TASK_STACK_SIZE
-#define TASK_CONFIG_HB_TASK_STACK_SIZE 4096
-#endif
-
-// End of Nikhil
-
 /**
  * Creation funciton for the OpenThread Stack task.
  */
@@ -106,13 +88,5 @@ extern void OtStack_taskCreate(void);
  * Creation funciton for the cli application task.
  */
 extern void cli_taskCreate(void);
-
-// Nikhil
-/**
- * Creation funciton for the heartbeat application task.
- */
-extern void heartbeat_taskCreate(void);
-
-// End of Nikhil
 
 #endif /* TASK_CONFIG_H_ */
