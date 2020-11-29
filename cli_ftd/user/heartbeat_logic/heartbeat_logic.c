@@ -544,8 +544,8 @@ static void heartbeat__i2c_transaction(uint8_t *read_buffer,
   debugPrintf("\r\n");
 }
 
-uint8_t readFillArray(uint8_t _familyByte, uint8_t _indexByte,
-                      uint8_t arraySize, uint8_t *array) {
+static uint8_t readFillArray(uint8_t _familyByte, uint8_t _indexByte,
+                             uint8_t arraySize, uint8_t *array) {
   // uint8_t returnByte;
   uint8_t statusByte;
 
