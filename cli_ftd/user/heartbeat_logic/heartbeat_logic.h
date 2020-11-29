@@ -21,9 +21,8 @@
 
 #include "tinyprintf.h"
 
-// Static Variables
-static const uint8_t MODE_ONE = 0x01;
-static const uint8_t MODE_TWO = 0x02;
+#define MODE_ONE 0x01
+#define MODE_TWO 0x02
 
 struct bioData {
 
