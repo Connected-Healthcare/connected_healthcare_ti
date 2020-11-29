@@ -7,11 +7,24 @@
 #else
 #define debugPrintf(...)
 #endif
-// Variables ------------
+
+#define MAXFAST_ARRAY_SIZE 6 // Number of bytes
+#define MAXFAST_EXTENDED_DATA 5
+
+// Static Variables
+
+static const uint8_t BIO_ADDRESS = 0x55;
+static const uint8_t INCORR_PARAM = 0xEE;
+static const uint32_t ENABLE_CMD_DELAY = 45000; // Microseconds
+static const uint32_t CMD_DELAY = 6000;         // Microseconds
+static const uint8_t SET_FORMAT = 0x00;
+static const uint8_t ENABLE = 0x01;
+static const uint8_t WRITE_SET_THRESHOLD =
+    0x01; // Index Byte for WRITE_INPUT(0x14)
+
 static uint8_t bpmArr[MAXFAST_ARRAY_SIZE];
 static uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA];
 
-static const uint8_t BIO_ADDRESS = 0x55;
 static uint8_t _userSelectedMode;
 static uint8_t _sampleRate = 100;
 

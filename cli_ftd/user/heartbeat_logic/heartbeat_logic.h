@@ -21,37 +21,9 @@
 
 #include "tinyprintf.h"
 
-#define WRITE_FIFO_INPUT_BYTE 0x04
-#define DISABLE 0x00
-#define ENABLE 0x01
-#define MODE_ONE 0x01
-#define MODE_TWO 0x02
-#define APP_MODE 0x00
-#define BOOTLOADER_MODE 0x08
-#define NO_WRITE 0x00
-#define INCORR_PARAM 0xEE
-
-#define CONFIGURATION_REGISTER 0x0A
-#define PULSE_MASK 0xFC
-#define READ_PULSE_MASK 0x03
-#define SAMP_MASK 0xE3
-#define READ_SAMP_MASK 0x1C
-#define ADC_MASK 0x9F
-#define READ_ADC_MASK 0x60
-
-#define ENABLE_CMD_DELAY 45000 // Microseconds
-#define CMD_DELAY 6000         // Microseconds
-#define MAXFAST_ARRAY_SIZE 6   // Number of bytes....
-#define MAXFAST_EXTENDED_DATA 5
-#define MAX30101_LED_ARRAY 12 // 4 values of 24 bit (3 byte) LED values
-
-#define SET_FORMAT 0x00
-#define READ_FORMAT                                                            \
-  0x01 // Index Byte under Family Byte: READ_OUTPUT_MODE (0x11)
-#define WRITE_SET_THRESHOLD 0x01 // Index Byte for WRITE_INPUT(0x14)
-#define WRITE_EXTERNAL_TO_FIFO 0x00
-
-// const uint8_t BIO_ADDRESS = 0x55;
+// Static Variables
+static const uint8_t MODE_ONE = 0x01;
+static const uint8_t MODE_TWO = 0x02;
 
 struct bioData {
 
