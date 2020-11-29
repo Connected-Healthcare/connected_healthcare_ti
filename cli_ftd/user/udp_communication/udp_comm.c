@@ -1,11 +1,42 @@
+/* Standard Library Header files */
+#include <assert.h>
+#include <stddef.h>
+#include <string.h>
+
+/* POSIX Header files */
+#include <pthread.h>
+#include <sched.h>
+#include <unistd.h>
+
+/* OpenThread Internal/Example Header files */
+#include "otsupport/otinstance.h"
+#include "otsupport/otrtosapi.h"
+#include <openthread-core-config.h>
+#include <openthread/config.h>
+#include <openthread/error.h>
+#include <openthread/instance.h>
+#include <openthread/thread.h>
+#include <openthread/udp.h>
+
+/* TI-specific files */
+#include "ti_drivers_config.h"
+#include <ti/drivers/GPIO.h>
+
+/* Third party tool files */
+#include "tinyprintf.h"
+
 #include "udp_comm.h"
+
+/* GLOBAL MACRO DEFINITIONS */
+/* UDP Task Configs */
+#define TASK_CONFIG_UDP_COMM_TASK_STACK_SIZE 1096
 
 /* FUNCTION DECLARATIONS */
 void *udp_comm_task(void *arg0);
 
 /* UDP APIs */
-void udp_comm_init(otInstance *aInstance);
-void udp_comm_send(otInstance *aInstance);
+static void udp_comm_init(otInstance *aInstance);
+static void udp_comm_send(otInstance *aInstance);
 
 /* GLOBAL VARIABLES */
 /* Custom UDP Message */
@@ -15,22 +46,25 @@ static const char *udp_sample_message = "Sample";
 static const char *udp_ipv6_add = "ff02::1";
 static const uint16_t udp_port_num = 1234;
 
-void udp_comm_init(otInstance *aInstance) {
+/* UDP Task Configs */
+static const int TASK_CONFIG_UDP_COMM_TASK_PRIORITY = 3;
+
+static void udp_comm_init(otInstance *aInstance) {
   otError error = OT_ERROR_NONE;
   memset(&messageInfo, 0, sizeof(messageInfo));
   error = otUdpOpen(aInstance, &socket, NULL, NULL);
 
-  // Specific node address
+  /* Specific node address */
   // error = otIp6AddressFromString("fe80:0:0:0:cc95:ed45:96a5:fcc7",
   //  &messageInfo.mPeerAddr);
 
-  // Send the UDP message to all link local FTDs:
+  /* Send the UDP message to all link local FTDs: */
   error = otIp6AddressFromString((const void *)udp_ipv6_add,
                                  &messageInfo.mPeerAddr);
   messageInfo.mPeerPort = udp_port_num;
 }
 
-void udp_comm_send(otInstance *aInstance) {
+static void udp_comm_send(otInstance *aInstance) {
   static otMessage *udp_message;
 
   otError error = OT_ERROR_NONE;

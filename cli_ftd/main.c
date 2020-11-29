@@ -74,6 +74,7 @@
 #ifdef CC1352R1_LAUNCHXL
 #include "sensor/stm32/stm32_i2c.h"
 #endif
+#include "user/udp_communication/udp_comm.h"
 
 /******************************************************************************
  Public Functions
