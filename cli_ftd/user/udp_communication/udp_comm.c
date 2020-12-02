@@ -30,6 +30,7 @@
 /* GLOBAL MACRO DEFINITIONS */
 /* UDP Task Configs */
 #define TASK_CONFIG_UDP_COMM_TASK_STACK_SIZE 1096
+#define MAX_UDP_MESSAGE_BUFF_LEN 1024
 
 /* FUNCTION DECLARATIONS */
 void *udp_comm_task(void *arg0);
@@ -37,14 +38,15 @@ void *udp_comm_task(void *arg0);
 /* UDP APIs */
 static void udp_comm_init(otInstance *aInstance);
 static void udp_comm_send(otInstance *aInstance);
+void udp_construct_message(char udp_msg_buf[]);
 
 /* GLOBAL VARIABLES */
 /* Custom UDP Message */
 static otMessageInfo messageInfo;
 static otUdpSocket socket;
-static const char *udp_sample_message = "Sample";
 static const char *udp_ipv6_add = "ff02::1";
 static const uint16_t udp_port_num = 1234;
+static char udp_sample_message_buff[MAX_UDP_MESSAGE_BUFF_LEN];
 
 /* UDP Task Configs */
 static const int TASK_CONFIG_UDP_COMM_TASK_PRIORITY = 3;
@@ -70,8 +72,8 @@ static void udp_comm_send(otInstance *aInstance) {
   otError error = OT_ERROR_NONE;
 
   udp_message = otUdpNewMessage(aInstance, NULL);
-  otMessageAppend(udp_message, (const void *)udp_sample_message,
-                  (uint16_t)strlen(udp_sample_message));
+  otMessageAppend(udp_message, (const void *)udp_sample_message_buff,
+                  (uint16_t)strlen(udp_sample_message_buff));
   error = otUdpSend(&socket, udp_message, &messageInfo);
   if (error != OT_ERROR_NONE && udp_message != NULL) {
     otMessageFree(udp_message);
@@ -79,6 +81,8 @@ static void udp_comm_send(otInstance *aInstance) {
 }
 
 void *udp_comm_task(void *arg0) {
+  char temp_buff[128] = {0};
+
   OtRtosApi_lock();
   otError error;
   otInstance *aInstance = OtInstance_get();
@@ -88,12 +92,22 @@ void *udp_comm_task(void *arg0) {
 
   while (1) {
     if (!GPIO_read(CONFIG_GPIO_BTN1)) {
-      printf("BTN-1 pressed: Thread started.\r\n");
-      error = otThreadSetEnabled(aInstance, true); // Thread start
+      OtRtosApi_lock();
+      snprintf(temp_buff, sizeof(temp_buff), "RLOC16:%04x",
+               otThreadGetRloc16(aInstance));
+      strcat(udp_sample_message_buff, temp_buff);
+      OtRtosApi_unlock();
+      printf("BTN-1 pressed: Sent the Msg: %s\r\n", udp_sample_message_buff);
+      udp_comm_send(aInstance);
     }
-    udp_comm_send(aInstance);
+    memset(udp_sample_message_buff, 0, sizeof(udp_sample_message_buff));
     sleep(1);
   }
+}
+
+void udp_construct_message(char udp_msg_buf[]) {
+  strcat(udp_sample_message_buff, ","); // Add separator
+  strcat(udp_sample_message_buff, udp_msg_buf);
 }
 
 void udp_comm_taskCreate() {
