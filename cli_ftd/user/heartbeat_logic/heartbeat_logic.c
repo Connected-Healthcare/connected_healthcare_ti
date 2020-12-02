@@ -2,24 +2,68 @@
 
 #define DEBUG_PRINTFS 0
 
-// Variables ------------
-uint8_t bpmArr[MAXFAST_ARRAY_SIZE];
-uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA];
-uint8_t senArr[MAX30101_LED_ARRAY];
-uint8_t bpmSenArr[MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY];
-uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA +
-                     MAX30101_LED_ARRAY];
+#if DEBUG_PRINTFS
+#define debugPrintf(...) printf(__VA_ARGS__)
+#else
+#define debugPrintf(...)
+#endif
 
-const uint8_t BIO_ADDRESS = 0x55;
-// uint8_t _resetPin;
-// uint8_t _mfioPin;
-uint8_t _address = 0x55;
-uint32_t _writeCoefArr[3];
-uint8_t _userSelectedMode;
-uint8_t _sampleRate = 100;
+#define MAXFAST_ARRAY_SIZE 6 // Number of bytes
+#define MAXFAST_EXTENDED_DATA 5
+
+// Static Variables
+
+static const uint8_t BIO_ADDRESS = 0x55;
+static const uint8_t INCORR_PARAM = 0xEE;
+static const uint32_t ENABLE_CMD_DELAY = 45000; // Microseconds
+static const uint32_t CMD_DELAY = 6000;         // Microseconds
+static const uint8_t SET_FORMAT = 0x00;
+static const uint8_t ENABLE = 0x01;
+static const uint8_t WRITE_SET_THRESHOLD =
+    0x01; // Index Byte for WRITE_INPUT(0x14)
+
+static uint8_t bpmArr[MAXFAST_ARRAY_SIZE];
+static uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA];
+
+static uint8_t _userSelectedMode;
+static uint8_t _sampleRate = 100;
 
 // Static Function Declarations
 static void heartbeat__initialize_application_mode();
+
+static void heartbeat__i2c_transaction(uint8_t *read_buffer,
+                                       uint8_t *write_buffer, int read_size,
+                                       int write_size);
+
+// This function uses the given family, index, and write byte to enable
+// the given sensor.
+static uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte,
+                           uint8_t _enableByte);
+
+// This function uses the given family, index, and write byte to communicate
+// with the MAX32664 which in turn communicates with downward sensors. There
+// are two steps demonstrated in this function. First a write to the MCU
+// indicating what you want to do, a delay, and then a read to confirm positive
+// transmission.
+static uint8_t writeByte_1(uint8_t _familyByte, uint8_t _indexByte,
+                           uint8_t _writeByte);
+// This function handles all read commands or stated another way, all
+// information requests. It starts a request by writing the family byte, index
+// byte, and delays 60 microseconds, during which the MAX32664 retrieves the
+// requested information. An I-squared-C request is then issued, and the
+// information is read and returned.
+static uint8_t readByte_1(uint8_t _familyByte, uint8_t _indexByte);
+
+// This function is exactly as the one above except it accepts a Write Byte as
+// a paramter. It starts a request by writing the family byte, index byte, and
+// write byte to the MAX32664, delays 60 microseconds, during which
+// the MAX32664 retrieves the requested information. A I-squared-C request is
+// then issued, and the information is read and returned.
+static uint8_t readByte_2(uint8_t _familyByte, uint8_t _indexByte,
+                          uint8_t _writeByte);
+
+static uint8_t readFillArray(uint8_t _familyByte, uint8_t _indexByte,
+                             uint8_t arraySize, uint8_t *array);
 
 // Heartbeat High-level APIs
 
@@ -33,28 +77,34 @@ uint8_t configBpm(uint8_t mode) {
 
   uint8_t statusChauf = 0;
   if (mode == MODE_ONE || mode == MODE_TWO) {
-  } else
+  } else {
     return INCORR_PARAM;
+  }
 
   statusChauf = setOutputMode(ALGO_DATA); // Just the data
-  if (statusChauf != SUCCESS)
+  if (statusChauf != SUCCESS) {
     return statusChauf;
+  }
 
   statusChauf = setFifoThreshold(0x01); // One sample before interrupt is fired.
-  if (statusChauf != SUCCESS)
+  if (statusChauf != SUCCESS) {
     return statusChauf;
+  }
 
   statusChauf = agcAlgoControl(ENABLE); // One sample before interrupt is fired.
-  if (statusChauf != SUCCESS)
+  if (statusChauf != SUCCESS) {
     return statusChauf;
+  }
 
   statusChauf = max30101Control(ENABLE);
-  if (statusChauf != SUCCESS)
+  if (statusChauf != SUCCESS) {
     return statusChauf;
+  }
 
   statusChauf = maximFastAlgoControl(mode);
-  if (statusChauf != SUCCESS)
+  if (statusChauf != SUCCESS) {
     return statusChauf;
+  }
 
   _userSelectedMode = mode;
   _sampleRate = readAlgoSamples();
@@ -279,13 +329,11 @@ static void heartbeat__initialize_application_mode() {
   sleep(1);
 }
 
-uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte,
-                    uint8_t _enableByte) {
+static uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte,
+                           uint8_t _enableByte) {
   uint8_t statusByte;
 
-#if DEBUG_PRINTFS
-  printf("Hit enableWrite()\r\n");
-#endif
+  debugPrintf("Hit enableWrite()\r\n");
 
   uint8_t number_of_bytes_to_read = 1;
   uint8_t number_of_bytes_to_write = 3;
@@ -323,15 +371,11 @@ uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte,
   bool status = I2C_transfer(i2cHandle, &i2cTransaction);
   if (status == false) {
     if (i2cTransaction.status == I2C_STATUS_ADDR_NACK) {
-// slave address not acknowledged
-#if DEBUG_PRINTFS
-      printf("Slave address t1 not acknowledged\r\n");
-#endif
+      // slave address not acknowledged
+      debugPrintf("Slave address t1 not acknowledged\r\n");
     }
   } else {
-#if DEBUG_PRINTFS
-    printf("Success\r\n");
-#endif
+    debugPrintf("Success\r\n");
   }
 
   // Close I2C
@@ -349,39 +393,29 @@ uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte,
   bool status2 = I2C_transfer(i2cHandle2, &i2cTransaction2);
   if (status2 == false) {
     if (i2cTransaction2.status == I2C_STATUS_ADDR_NACK) {
-// slave address not acknowledged
-#if DEBUG_PRINTFS
-      printf("Slave address t2 not acknowledged\r\n");
-#endif
+      // slave address not acknowledged
+      debugPrintf("Slave address t2 not acknowledged\r\n");
     }
   } else {
-#if DEBUG_PRINTFS
-    printf("Success\r\n");
-#endif
+    debugPrintf("Success\r\n");
   }
   I2C_close(i2cHandle2);
   for (int i = 0; i < number_of_bytes_to_read; i++) {
-#if DEBUG_PRINTFS
-    printf("%x\r\n", readBuffer[i]);
-#endif
+    debugPrintf("%x\r\n", readBuffer[i]);
   }
-#if DEBUG_PRINTFS
-  printf("\r\n");
-#endif
+  debugPrintf("\r\n");
 
   statusByte = readBuffer[0];
 
   return statusByte;
 }
 
-uint8_t writeByte_1(uint8_t _familyByte, uint8_t _indexByte,
-                    uint8_t _writeByte) {
+static uint8_t writeByte_1(uint8_t _familyByte, uint8_t _indexByte,
+                           uint8_t _writeByte) {
   // uint8_t returnByte;
   uint8_t statusByte;
 
-#if DEBUG_PRINTFS
-  printf("Hit writeByte_1()\r\n");
-#endif
+  debugPrintf("Hit writeByte_1()\r\n");
 
   uint8_t number_of_bytes_to_read = 1;
   uint8_t number_of_bytes_to_write = 3;
@@ -401,45 +435,11 @@ uint8_t writeByte_1(uint8_t _familyByte, uint8_t _indexByte,
   return statusByte;
 }
 
-// TODO: Write writeByte_2() definition here
-
-uint8_t writeByte_3(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte,
-                    uint16_t _val) {
-  // uint8_t returnByte;
-  uint8_t statusByte;
-
-#if DEBUG_PRINTFS
-  printf("Hit writeByte_1()\r\n");
-#endif
-
-  uint8_t number_of_bytes_to_read = 1;
-  uint8_t number_of_bytes_to_write = 5;
-
-  uint8_t readBuffer[number_of_bytes_to_read];
-  uint8_t writeBuffer[number_of_bytes_to_write];
-  memset(writeBuffer, 0, sizeof(writeBuffer));
-  writeBuffer[0] = _familyByte;
-  writeBuffer[1] = _indexByte;
-  writeBuffer[2] = _writeByte;
-  writeBuffer[3] = ((_val >> 8) & 0xFF); // MSB
-  writeBuffer[4] = (_val & 0xFF);        // LSB
-
-  heartbeat__i2c_transaction(readBuffer, writeBuffer, number_of_bytes_to_read,
-                             number_of_bytes_to_write);
-
-  statusByte = readBuffer[0];
-  // returnByte = readBuffer[1];
-
-  return statusByte;
-}
-
-uint8_t readByte_1(uint8_t _familyByte, uint8_t _indexByte) {
+static uint8_t readByte_1(uint8_t _familyByte, uint8_t _indexByte) {
   uint8_t returnByte;
   uint8_t statusByte;
 
-#if DEBUG_PRINTFS
-  printf("Hit readByte_1()\r\n");
-#endif
+  debugPrintf("Hit readByte_1()\r\n");
 
   uint8_t number_of_bytes_to_read = 2;
   uint8_t number_of_bytes_to_write = 2;
@@ -463,14 +463,12 @@ uint8_t readByte_1(uint8_t _familyByte, uint8_t _indexByte) {
   return returnByte;
 }
 
-uint8_t readByte_2(uint8_t _familyByte, uint8_t _indexByte,
-                   uint8_t _writeByte) {
+static uint8_t readByte_2(uint8_t _familyByte, uint8_t _indexByte,
+                          uint8_t _writeByte) {
   uint8_t returnByte;
   uint8_t statusByte;
 
-#if DEBUG_PRINTFS
-  printf("Hit readByte_2()\r\n");
-#endif
+  debugPrintf("Hit readByte_2()\r\n");
 
   uint8_t number_of_bytes_to_read = 2;
   uint8_t number_of_bytes_to_write = 3;
@@ -494,11 +492,10 @@ uint8_t readByte_2(uint8_t _familyByte, uint8_t _indexByte,
   return returnByte;
 }
 
-void heartbeat__i2c_transaction(uint8_t *read_buffer, uint8_t *write_buffer,
-                                int read_size, int write_size) {
-#if DEBUG_PRINTFS
-  printf("Hit heartbeat__i2c_transaction\r\n");
-#endif
+static void heartbeat__i2c_transaction(uint8_t *read_buffer,
+                                       uint8_t *write_buffer, int read_size,
+                                       int write_size) {
+  debugPrintf("Hit heartbeat__i2c_transaction\r\n");
 
   uint8_t number_of_bytes_to_read = read_size;
   uint8_t number_of_bytes_to_write = write_size;
@@ -525,15 +522,11 @@ void heartbeat__i2c_transaction(uint8_t *read_buffer, uint8_t *write_buffer,
   bool status = I2C_transfer(i2cHandle, &i2cTransaction);
   if (status == false) {
     if (i2cTransaction.status == I2C_STATUS_ADDR_NACK) {
-// slave address not acknowledged
-#if DEBUG_PRINTFS
-      printf("Slave address not acknowledged on i2c write\r\n");
-#endif
+      // slave address not acknowledged
+      debugPrintf("Slave address not acknowledged on i2c write\r\n");
     }
   } else {
-#if DEBUG_PRINTFS
-    printf("Write Success\r\n");
-#endif
+    debugPrintf("Write Success\r\n");
   }
 
   // Close I2C
@@ -551,35 +544,25 @@ void heartbeat__i2c_transaction(uint8_t *read_buffer, uint8_t *write_buffer,
   bool status2 = I2C_transfer(i2cHandle2, &i2cTransaction2);
   if (status2 == false) {
     if (i2cTransaction2.status == I2C_STATUS_ADDR_NACK) {
-// slave address not acknowledged
-#if DEBUG_PRINTFS
-      printf("Slave address not acknowledged on i2c write\r\n");
-#endif
+      // slave address not acknowledged
+      debugPrintf("Slave address not acknowledged on i2c write\r\n");
     }
   } else {
-#if DEBUG_PRINTFS
-    printf("Read Success\r\n");
-#endif
+    debugPrintf("Read Success\r\n");
   }
   I2C_close(i2cHandle2);
   for (int i = 0; i < number_of_bytes_to_read; i++) {
-#if DEBUG_PRINTFS
-    printf("%x\r\n", read_buffer[i]);
-#endif
+    debugPrintf("%x\r\n", read_buffer[i]);
   }
-#if DEBUG_PRINTFS
-  printf("\r\n");
-#endif
+  debugPrintf("\r\n");
 }
 
-uint8_t readFillArray(uint8_t _familyByte, uint8_t _indexByte,
-                      uint8_t arraySize, uint8_t *array) {
+static uint8_t readFillArray(uint8_t _familyByte, uint8_t _indexByte,
+                             uint8_t arraySize, uint8_t *array) {
   // uint8_t returnByte;
   uint8_t statusByte;
 
-#if DEBUG_PRINTFS
-  printf("Hit readFillArray()\r\n");
-#endif
+  debugPrintf("Hit readFillArray()\r\n");
 
   uint8_t number_of_bytes_to_read = (1 + arraySize);
   uint8_t number_of_bytes_to_write = 2;
