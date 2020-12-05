@@ -28,6 +28,8 @@ const GPIO1     = GPIO.addInstance();
 const GPIO2     = GPIO.addInstance();
 const GPIO3     = GPIO.addInstance();
 const GPIO4     = GPIO.addInstance();
+const GPIO5     = GPIO.addInstance();
+const GPIO6     = GPIO.addInstance();
 const I2C       = scripting.addModule("/ti/drivers/I2C", {}, false);
 const I2C1      = I2C.addInstance();
 const NVS       = scripting.addModule("/ti/drivers/NVS");
@@ -95,6 +97,14 @@ GPIO4.$hardware                  = system.deviceData.board.components.LED_RED;
 GPIO4.$name                      = "CONFIG_GPIO_RLED";
 GPIO4.pinInstance.$name          = "CONFIG_PIN_RLED";
 GPIO4.pinInstance.outputStrength = "Maximum";
+
+GPIO5.$name             = "CONFIG_GPIO_2";
+GPIO5.gpioPin.$assign   = "boosterpack.27";
+GPIO5.pinInstance.$name = "CONFIG_PIN_2";
+
+GPIO6.$name             = "CONFIG_GPIO_3";
+GPIO6.gpioPin.$assign   = "boosterpack.28";
+GPIO6.pinInstance.$name = "CONFIG_PIN_3";
 
 I2C1.$name                = "CONFIG_I2C_0";
 I2C1.sdaPinInstance.$name = "CONFIG_PIN_0";

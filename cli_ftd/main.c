@@ -113,6 +113,7 @@ int main(void) {
 
 #ifdef CC1352R1_LAUNCHXL
   stm32__init();
+  heartbeat_taskCreate();
 #endif
 
 #ifdef CC1352P_2_LAUNCHXL

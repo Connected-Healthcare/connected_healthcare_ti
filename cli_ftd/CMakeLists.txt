@@ -65,6 +65,8 @@ if (${TARGET_BOARD} STREQUAL "CC1352R1_LAUNCHXL")
 set(USER_CLI_FTD_SOURCES "${USER_CLI_FTD_SOURCES}"
     "user/udp_communication/udp_comm.c"
     "user/sensor/stm32/stm32_i2c.c"
+    "user/heartbeat/heartbeat.c"
+    "user/heartbeat_logic/heartbeat_logic.c"
 )
 endif()
 
