@@ -69,7 +69,7 @@
  * Priority of the Application task.
  */
 #ifndef TASK_CONFIG_CLI_TASK_PRIORITY
-#define TASK_CONFIG_CLI_TASK_PRIORITY 3
+#define TASK_CONFIG_CLI_TASK_PRIORITY 4
 #endif
 
 /**

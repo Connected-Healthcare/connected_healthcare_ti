@@ -50,13 +50,14 @@ set(USER_CLI_FTD_SOURCES
     "user/user.c"
     "user/tinyprintf/tinyprintf_override.c"
     "user/utility/float.c"
+    "user/udp_communication/udp_comm.c"
+    "user/heartbeat/heartbeat.c"
+    "user/heartbeat_logic/heartbeat_logic.c"
 )
 
 # CC1352P_2 specific code
 if (${TARGET_BOARD} STREQUAL "CC1352P_2_LAUNCHXL")
 set(USER_CLI_FTD_SOURCES "${USER_CLI_FTD_SOURCES}"
-    "user/heartbeat/heartbeat.c"
-    "user/heartbeat_logic/heartbeat_logic.c" 
 )
 endif()
 

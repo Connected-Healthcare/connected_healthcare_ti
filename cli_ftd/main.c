@@ -77,6 +77,7 @@
 #ifdef CC1352R1_LAUNCHXL
 #include "sensor/stm32/stm32_i2c.h"
 #endif
+#include "user/udp_communication/udp_comm.h"
 
 /******************************************************************************
  Public Functions
@@ -112,6 +113,7 @@ int main(void) {
 
 #ifdef CC1352R1_LAUNCHXL
   stm32__init();
+  heartbeat_taskCreate();
 #endif
 
 #ifdef CC1352P_2_LAUNCHXL
@@ -119,6 +121,8 @@ int main(void) {
 #endif
 
   cli_taskCreate();
+
+  udp_comm_taskCreate();
 
   /* Start sys/bios, this will never return */
   BIOS_start();

@@ -25,11 +25,20 @@
 #include <string.h>
 
 #include "user/heartbeat_logic/heartbeat_logic.h"
+#include "user/udp_communication/udp_comm.h"
 
 // Import I2C Driver definitions
 #include <ti/drivers/I2C.h>
 
 #include "tinyprintf.h"
+
+#define DEBUG_PRINTFS 0
+
+#if DEBUG_PRINTFS
+#define debugPrintf(...) printf(__VA_ARGS__)
+#else
+#define debugPrintf(...)
+#endif
 
 /**
  * Priority of the Application task.
@@ -54,8 +63,16 @@ static const uint32_t HEARTBEAT_TASK_DELAY_MICROSECONDS = 250000;
 /* Application thread */
 void *heartbeat_task(void *arg0);
 
+/* Data extraction */
+void heartbeat__get_data(char *temp_buff);
+
 /* Application thread call stack */
 static char heartbeat_stack[TASK_CONFIG_HB_TASK_STACK_SIZE];
+
+/* Extract heartbeat data */
+void heartbeat__get_data(char *temp_buff) {
+  sprintf(temp_buff, "HeartRate:%d,Oxygen:%d", body.heartRate, body.oxygen);
+}
 
 // Heartbeat Task
 
@@ -128,13 +145,14 @@ void *heartbeat_task(void *arg0) {
     printf("LED Toggle %ld \r\n", count++);
 #endif
     GPIO_toggle(CONFIG_GPIO_GLED);
-
     body = readBpm();
-    printf("Heartrate: %d\r\n", body.heartRate);
-    printf("Confidence: %d\r\n", body.confidence);
-    printf("Oxygen: %d\r\n", body.oxygen);
-    printf("Status: %d\r\n", body.status);
-    printf("\r\n");
+
+    debugPrintf("Heartrate: %d\r\n", body.heartRate);
+    debugPrintf("Confidence: %d\r\n", body.confidence);
+    debugPrintf("Oxygen: %d\r\n", body.oxygen);
+    debugPrintf("Status: %d\r\n", body.status);
+    debugPrintf("\r\n");
+
     usleep(HEARTBEAT_TASK_DELAY_MICROSECONDS); // 250 millseconds
   }
 }
