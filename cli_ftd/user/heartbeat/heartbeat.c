@@ -32,7 +32,13 @@
 
 #include "tinyprintf.h"
 
-#define HEARTBEAT_DEBUG 0
+#define DEBUG_PRINTFS 0
+
+#if DEBUG_PRINTFS
+#define debugPrintf(...) printf(__VA_ARGS__)
+#else
+#define debugPrintf(...)
+#endif
 
 /**
  * Priority of the Application task.
@@ -58,13 +64,13 @@ static const uint32_t HEARTBEAT_TASK_DELAY_MICROSECONDS = 250000;
 void *heartbeat_task(void *arg0);
 
 /* Data extraction */
-void get_heartbeat_data(char *temp_buff);
+void heartbeat__get_data(char *temp_buff);
 
 /* Application thread call stack */
 static char heartbeat_stack[TASK_CONFIG_HB_TASK_STACK_SIZE];
 
 /* Extract heartbeat data */
-void get_heartbeat_data(char *temp_buff) {
+void heartbeat__get_data(char *temp_buff) {
   sprintf(temp_buff, "HeartRate:%d,Oxygen:%d", body.heartRate, body.oxygen);
 }
 
@@ -141,13 +147,11 @@ void *heartbeat_task(void *arg0) {
     GPIO_toggle(CONFIG_GPIO_GLED);
     body = readBpm();
 
-#if HEARTBEAT_DEBUG == 1
-    printf("Heartrate: %d\r\n", body.heartRate);
-    printf("Confidence: %d\r\n", body.confidence);
-    printf("Oxygen: %d\r\n", body.oxygen);
-    printf("Status: %d\r\n", body.status);
-    printf("\r\n");
-#endif
+    debugPrintf("Heartrate: %d\r\n", body.heartRate);
+    debugPrintf("Confidence: %d\r\n", body.confidence);
+    debugPrintf("Oxygen: %d\r\n", body.oxygen);
+    debugPrintf("Status: %d\r\n", body.status);
+    debugPrintf("\r\n");
 
     usleep(HEARTBEAT_TASK_DELAY_MICROSECONDS); // 250 millseconds
   }

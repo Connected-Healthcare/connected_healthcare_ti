@@ -90,12 +90,13 @@ void *udp_comm_task(void *arg0) {
   OtRtosApi_unlock();
 
   while (1) {
+    /* For now, the heartrate sensor data sending is dependent on button press. It will be removed during final stage and the data will get sent automatically */
     if (!GPIO_read(CONFIG_GPIO_BTN1)) {
       OtRtosApi_lock();
       snprintf(udp_final_message, sizeof(udp_final_message), "RLOC16:%04x,",
                otThreadGetRloc16(aInstance));
       OtRtosApi_unlock();
-      get_heartbeat_data(udp_temp_msg_buff);
+      heartbeat__get_data(udp_temp_msg_buff);
       strcat(udp_final_message, udp_temp_msg_buff);
       printf("BTN-1 pressed: Sent the Msg: %s\r\n", udp_final_message);
       udp_comm_send(aInstance);
