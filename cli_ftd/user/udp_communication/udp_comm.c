@@ -115,8 +115,8 @@ static void get_sensors_data(char *udp_temp_msg_buff) {
 
   lps22hb_temperature = stm32__lps22hb_temperature();
   lps22hb_pressure = stm32__lps22hb_pressure();
-  float__convert_float_to_string(lps22hb_temperature, lps22hb_pressure_str);
-  float__convert_float_to_string(lps22hb_pressure, lps22hb_temperature_str);
+  float__convert_float_to_string(lps22hb_temperature, lps22hb_temperature_str);
+  float__convert_float_to_string(lps22hb_pressure, lps22hb_pressure_str);
 
   stm32__magnetometer(mag_data);
   stm32__accelerometer(accel_data);
