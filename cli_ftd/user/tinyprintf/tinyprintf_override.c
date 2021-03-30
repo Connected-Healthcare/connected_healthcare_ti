@@ -77,6 +77,7 @@ static void *tinyprintf_uart_task(void *arg) {
   while (1) {
     if (PlatformUart_writeEnabled == false) {
       usleep(TASK_DELAY);
+      // GPIO_toggle(CONFIG_GPIO_RLED);
       continue;
     }
 

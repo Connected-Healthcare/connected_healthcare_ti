@@ -72,6 +72,7 @@
 
 #include "user/heartbeat/heartbeat.h"
 
+#include "tinyprintf.h"
 #include "tinyprintf/tinyprintf_override.h"
 
 #ifdef CC1352R1_LAUNCHXL
@@ -92,6 +93,7 @@
  * @note This function should never return.
  */
 int main(void) {
+
   /* Call driver init functions */
   Board_initGeneral();
 
@@ -113,16 +115,16 @@ int main(void) {
 
 #ifdef CC1352R1_LAUNCHXL
   stm32__init();
-  heartbeat_taskCreate();
 #endif
 
 #ifdef CC1352P_2_LAUNCHXL
-  heartbeat_taskCreate();
 #endif
 
   cli_taskCreate();
 
   udp_comm_taskCreate();
+
+  // stm_i2c_comm_taskCreate();
 
   /* Start sys/bios, this will never return */
   BIOS_start();

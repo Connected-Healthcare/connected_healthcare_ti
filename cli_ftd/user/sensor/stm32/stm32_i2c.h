@@ -4,6 +4,9 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include <stdlib.h>
+#include <string.h>
+
 void stm32__init(void);
 
 uint32_t stm32__spec_co_gas_concentration(void);
@@ -21,10 +24,22 @@ uint32_t stm32__time_of_flight(void);
 void stm32__accelerometer(int32_t arr[]);
 void stm32__gyroscope(int32_t arr[]);
 void stm32__magnetometer(int32_t arr[]);
+void stm32__heartbeat_data(uint16_t arr[]);
+void stm32__gps_data(float data_arr[]);
 
 // Helper functions
 bool stm32__write_data(uint8_t write_address, uint8_t data);
 bool stm32__read_data(uint8_t write_address, uint8_t readBuf[],
                       uint32_t readCount);
+
+uint32_t stm32__convert_to_uint32(uint8_t *data);
+uint16_t stm32__convert_to_uint16(uint8_t *data);
+float stm32__convert_uint32_float_structure_to_float(uint32_t data);
+void convert_float_and_print(float data, const char *identifier);
+
+/**
+ * Creation function for the stm32_i2c application task.
+ */
+extern void stm_i2c_comm_taskCreate(void);
 
 #endif
