@@ -65,6 +65,7 @@ endif()
 if (${TARGET_BOARD} STREQUAL "CC1352R1_LAUNCHXL")
 set(USER_CLI_FTD_SOURCES "${USER_CLI_FTD_SOURCES}"
     "user/sensor/stm32/stm32_i2c.c"
+    "user/sensor/stm32/stm32_i2c_task.c"
 )
 endif()
 

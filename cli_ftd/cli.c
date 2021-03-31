@@ -73,9 +73,6 @@
 #include "task_config.h"
 #include "ti_drivers_config.h"
 
-#include "sensor/stm32/stm32_i2c.h"
-#include "tinyprintf.h"
-
 #if TIOP_OAD
 /* OAD required Header files */
 #include "oad_image_header.h"

@@ -4,7 +4,6 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include <stdlib.h>
 #include <string.h>
 
 void stm32__init(void);
@@ -36,6 +35,8 @@ uint32_t stm32__convert_to_uint32(uint8_t *data);
 uint16_t stm32__convert_to_uint16(uint8_t *data);
 float stm32__convert_uint32_float_structure_to_float(uint32_t data);
 void convert_float_and_print(float data, const char *identifier);
+void uint32_print(uint32_t data, const char *identifier);
+void i32_3_print(int32_t data[], const char *identifier);
 
 /**
  * Creation function for the stm32_i2c application task.

@@ -72,11 +72,10 @@
 
 #include "user/heartbeat/heartbeat.h"
 
-#include "tinyprintf.h"
 #include "tinyprintf/tinyprintf_override.h"
 
 #ifdef CC1352R1_LAUNCHXL
-#include "sensor/stm32/stm32_i2c.h"
+#include "user/sensor/stm32/stm32_i2c.h"
 #endif
 #include "user/udp_communication/udp_comm.h"
 
@@ -123,8 +122,6 @@ int main(void) {
   cli_taskCreate();
 
   udp_comm_taskCreate();
-
-  // stm_i2c_comm_taskCreate();
 
   /* Start sys/bios, this will never return */
   BIOS_start();
