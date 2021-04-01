@@ -4,7 +4,6 @@
 /* Standard Library Header files */
 #include <assert.h>
 
-#include <stddef.h>
 #include <stdint.h>
 
 /* POSIX Header files */
@@ -17,6 +16,7 @@
 /* Utility Functions */
 #include "tinyprintf.h"
 #include "utility/float.h"
+#include "utility/type_print.h"
 
 /* RTOS Header files */
 #include <ti/drivers/GPIO.h>
@@ -47,18 +47,9 @@
 static char stm_i2c_comm_stack[TASK_CONFIG_STM_TASK_STACK_SIZE];
 
 // Global Declarations
-// I2C_Params params;
 
 // Function Declarations
 void *stm_i2c_comm_task(void *arg0);
-
-// void get_I2C_Params(I2C_Params *params_new) { params_new = &params; }
-
-// void stm32__init(void) {
-//   I2C_Params_init(&params);
-//   params.bitRate = I2C_100kHz;
-//   set_I2C_Params(&params);
-// }
 
 void stm_i2c_comm_taskCreate(void) {
   pthread_t thread;

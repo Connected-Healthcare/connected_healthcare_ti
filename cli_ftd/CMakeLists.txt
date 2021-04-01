@@ -53,6 +53,8 @@ set(USER_CLI_FTD_SOURCES
     "user/udp_communication/udp_comm.c"
     "user/heartbeat/heartbeat.c"
     "user/heartbeat_logic/heartbeat_logic.c"
+    "user/utility/type_convert.c"
+    "user/utility/type_print.c"
 )
 
 # CC1352P_2 specific code

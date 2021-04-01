@@ -1,18 +1,15 @@
 #include "sensor/stm32/stm32_i2c.h"
 
 /* Standard Library Header files */
-#include <assert.h>
-#include <stddef.h>
 #include <stdint.h>
-
-/* POSIX Header files */
-#include <unistd.h>
 
 #include "ti_drivers_config.h"
 #include <ti/drivers/I2C.h>
 
 #include "tinyprintf.h"
 #include "utility/float.h"
+#include "utility/type_convert.h"
+#include "utility/type_print.h"
 
 #define DEBUG_PRINT 0
 #if DEBUG_PRINT
@@ -65,7 +62,7 @@ uint32_t stm32__spec_co_gas_concentration(void) {
       stm32__read_data(SPEC_CO_GAS_CONCENTRATION_ADDRESS, readBuf, ARR_SIZE);
   if (true != is_i2c_transaction_success)
     return 0;
-  return stm32__convert_to_uint32(readBuf);
+  return convert_to_uint32(readBuf);
 }
 
 int16_t stm32__spec_co_temperature(void) {
@@ -74,7 +71,7 @@ int16_t stm32__spec_co_temperature(void) {
       stm32__read_data(SPEC_CO_TEMPERATURE_ADDRESS, readBuf, sizeof(readBuf));
   if (true != is_i2c_transaction_success)
     return 0;
-  uint16_t rdata = stm32__convert_to_uint16(readBuf);
+  uint16_t rdata = convert_to_uint16(readBuf);
   return (int16_t)rdata;
 }
 
@@ -84,7 +81,7 @@ uint16_t stm32__spec_co_humidity(void) {
       SPEC_CO_RELATIVE_HUMIDITY_ADDRESS, readBuf, sizeof(readBuf));
   if (true != is_i2c_transaction_success)
     return 0;
-  return stm32__convert_to_uint16(readBuf);
+  return convert_to_uint16(readBuf);
 }
 
 uint16_t stm32__sgp30_co2(void) {
@@ -93,7 +90,7 @@ uint16_t stm32__sgp30_co2(void) {
       stm32__read_data(SGP30_CARBON_DIOXIDE, readBuf, sizeof(readBuf));
   if (true != is_i2c_transaction_success)
     return 0;
-  return stm32__convert_to_uint16(readBuf);
+  return convert_to_uint16(readBuf);
 }
 
 uint16_t stm32__sgp30_voc(void) {
@@ -102,7 +99,7 @@ uint16_t stm32__sgp30_voc(void) {
       stm32__read_data(SGP30_VOC, readBuf, sizeof(readBuf));
   if (true != is_i2c_transaction_success)
     return 0;
-  return stm32__convert_to_uint16(readBuf);
+  return convert_to_uint16(readBuf);
 }
 
 float stm32__hts221_temperature(void) {
@@ -111,8 +108,8 @@ float stm32__hts221_temperature(void) {
       stm32__read_data(HTS221_TEMPERATURE_ADDRESS, readBuf, ARR_SIZE);
   if (true != is_i2c_transaction_success)
     return 0.0;
-  uint32_t raw_data = stm32__convert_to_uint32(readBuf);
-  return stm32__convert_uint32_float_structure_to_float(raw_data);
+  uint32_t raw_data = convert_to_uint32(readBuf);
+  return convert_uint32_float_structure_to_float(raw_data);
 }
 
 float stm32__hts221_humidity(void) {
@@ -121,8 +118,8 @@ float stm32__hts221_humidity(void) {
       stm32__read_data(HTS221_HUMIDITY_ADDRESS, readBuf, ARR_SIZE);
   if (true != is_i2c_transaction_success)
     return 0.0;
-  uint32_t raw_data = stm32__convert_to_uint32(readBuf);
-  return stm32__convert_uint32_float_structure_to_float(raw_data);
+  uint32_t raw_data = convert_to_uint32(readBuf);
+  return convert_uint32_float_structure_to_float(raw_data);
 }
 
 float stm32__lps22hb_temperature(void) {
@@ -131,8 +128,8 @@ float stm32__lps22hb_temperature(void) {
       stm32__read_data(LPS22HB_TEMPERATURE_ADDRESS, readBuf, ARR_SIZE);
   if (true != is_i2c_transaction_success)
     return 0.0;
-  uint32_t raw_data = stm32__convert_to_uint32(readBuf);
-  return stm32__convert_uint32_float_structure_to_float(raw_data);
+  uint32_t raw_data = convert_to_uint32(readBuf);
+  return convert_uint32_float_structure_to_float(raw_data);
 }
 
 float stm32__lps22hb_pressure(void) {
@@ -141,8 +138,8 @@ float stm32__lps22hb_pressure(void) {
       stm32__read_data(LPS22HB_PRESSURE_ADDRESS, readBuf, ARR_SIZE);
   if (true != is_i2c_transaction_success)
     return 0.0;
-  uint32_t raw_data = stm32__convert_to_uint32(readBuf);
-  return stm32__convert_uint32_float_structure_to_float(raw_data);
+  uint32_t raw_data = convert_to_uint32(readBuf);
+  return convert_uint32_float_structure_to_float(raw_data);
 }
 
 uint32_t stm32__time_of_flight(void) {
@@ -151,7 +148,7 @@ uint32_t stm32__time_of_flight(void) {
       stm32__read_data(TIME_OF_FLIGHT_ADDRESS, readBuf, ARR_SIZE);
   if (true != is_i2c_transaction_success)
     return 0;
-  return stm32__convert_to_uint32(readBuf);
+  return convert_to_uint32(readBuf);
 }
 
 void stm32__accelerometer(int32_t arr[]) {
@@ -159,9 +156,9 @@ void stm32__accelerometer(int32_t arr[]) {
   is_i2c_transaction_success =
       stm32__read_data(ACCELEROMETER_ADDRESS, readBuf, sizeof(readBuf));
   if (true == is_i2c_transaction_success) {
-    arr[0] = (int32_t)stm32__convert_to_uint32(readBuf);
-    arr[1] = (int32_t)stm32__convert_to_uint32(readBuf + 4);
-    arr[2] = (int32_t)stm32__convert_to_uint32(readBuf + 8);
+    arr[0] = (int32_t)convert_to_uint32(readBuf);
+    arr[1] = (int32_t)convert_to_uint32(readBuf + 4);
+    arr[2] = (int32_t)convert_to_uint32(readBuf + 8);
   }
 }
 
@@ -170,9 +167,9 @@ void stm32__gyroscope(int32_t arr[]) {
   is_i2c_transaction_success =
       stm32__read_data(GYROSCOPE_ADDRESS, readBuf, sizeof(readBuf));
   if (true == is_i2c_transaction_success) {
-    arr[0] = (int32_t)stm32__convert_to_uint32(readBuf);
-    arr[1] = (int32_t)stm32__convert_to_uint32(readBuf + 4);
-    arr[2] = (int32_t)stm32__convert_to_uint32(readBuf + 8);
+    arr[0] = (int32_t)convert_to_uint32(readBuf);
+    arr[1] = (int32_t)convert_to_uint32(readBuf + 4);
+    arr[2] = (int32_t)convert_to_uint32(readBuf + 8);
   }
 }
 
@@ -181,9 +178,9 @@ void stm32__magnetometer(int32_t arr[]) {
   is_i2c_transaction_success =
       stm32__read_data(MAGNETOMETER_ADDRESS, readBuf, sizeof(readBuf));
   if (true == is_i2c_transaction_success) {
-    arr[0] = (int32_t)stm32__convert_to_uint32(readBuf);
-    arr[1] = (int32_t)stm32__convert_to_uint32(readBuf + 4);
-    arr[2] = (int32_t)stm32__convert_to_uint32(readBuf + 8);
+    arr[0] = (int32_t)convert_to_uint32(readBuf);
+    arr[1] = (int32_t)convert_to_uint32(readBuf + 4);
+    arr[2] = (int32_t)convert_to_uint32(readBuf + 8);
   }
 }
 
@@ -192,10 +189,10 @@ void stm32__heartbeat_data(uint16_t arr[]) {
   is_i2c_transaction_success =
       stm32__read_data(HEARTBEAT_ADDRESS, readBuf, sizeof(readBuf));
   if (true == is_i2c_transaction_success) {
-    arr[0] = (uint16_t)stm32__convert_to_uint16(readBuf);
-    arr[1] = (uint16_t)stm32__convert_to_uint16(readBuf + 2);
-    arr[2] = (uint16_t)stm32__convert_to_uint16(readBuf + 4);
-    arr[3] = (uint16_t)stm32__convert_to_uint16(readBuf + 6);
+    arr[0] = (uint16_t)convert_to_uint16(readBuf);
+    arr[1] = (uint16_t)convert_to_uint16(readBuf + 2);
+    arr[2] = (uint16_t)convert_to_uint16(readBuf + 4);
+    arr[3] = (uint16_t)convert_to_uint16(readBuf + 6);
   }
 }
 
@@ -205,10 +202,10 @@ void stm32__gps_data(float data_arr[]) {
   is_i2c_transaction_success =
       stm32__read_data(GPS_ADDRESS, readBuf, ARR_SIZE * 2);
   if (true == is_i2c_transaction_success) {
-    arr[0] = (uint32_t)stm32__convert_to_uint32(readBuf);
-    arr[1] = (uint32_t)stm32__convert_to_uint32(readBuf + 4);
-    data_arr[0] = stm32__convert_uint32_float_structure_to_float(arr[0]);
-    data_arr[1] = stm32__convert_uint32_float_structure_to_float(arr[1]);
+    arr[0] = (uint32_t)convert_to_uint32(readBuf);
+    arr[1] = (uint32_t)convert_to_uint32(readBuf + 4);
+    data_arr[0] = convert_uint32_float_structure_to_float(arr[0]);
+    data_arr[1] = convert_uint32_float_structure_to_float(arr[1]);
   }
 }
 
@@ -268,45 +265,4 @@ bool stm32__read_data(uint8_t write_address, uint8_t readBuf[],
 
   I2C_close(handle);
   return true;
-}
-
-uint32_t stm32__convert_to_uint32(uint8_t *data) {
-  uint32_t rdata =
-      ((data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0]);
-  ;
-  // debugPrintf("%lx\r\n", rdata);
-  return rdata;
-}
-
-uint16_t stm32__convert_to_uint16(uint8_t *data) {
-  uint16_t rdata = ((data[1] << 8) | data[0]);
-  // debugPrintf("%x\r\n", rdata);
-  return rdata;
-}
-
-float stm32__convert_uint32_float_structure_to_float(uint32_t data) {
-  float *rdata = (float *)&data;
-
-#if DEBUG_PRINT
-  char buffer[32] = {0};
-  float__convert_float_to_string((*rdata), buffer);
-  // debugPrintf("%s\r\n", buffer);
-#endif
-
-  return (*rdata);
-}
-
-void convert_float_and_print(float data, const char *identifier) {
-  char buffer[12] = {0};
-  float__convert_float_to_string(data, buffer);
-  debugPrintf("%s: %s\r\n", identifier, buffer);
-}
-
-void uint32_print(uint32_t data, const char *identifier) {
-  debugPrintf("%s: %lu\r\n", identifier, data);
-}
-
-void i32_3_print(int32_t data[], const char *identifier) {
-  debugPrintf("%s: %ld %ld %ld\r\n", identifier, data[0], data[1], data[2]);
-  memset(data, 0, 3 * sizeof(int32_t));
 }
