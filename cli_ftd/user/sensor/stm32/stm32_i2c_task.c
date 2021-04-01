@@ -1,25 +1,25 @@
-#include "stm32_i2c_task.h"
-#include "stm32_i2c.h"
+#include "sensor/stm32/stm32_i2c_task.h"
 
 /* Standard Library Header files */
 #include <assert.h>
-
 #include <stdint.h>
 
 /* POSIX Header files */
 #include <pthread.h>
 #include <sched.h>
+#include <string.h>
 #include <unistd.h>
 
-#include "ti_drivers_config.h"
-
 /* Utility Functions */
-#include "tinyprintf.h"
+#include "third_party/tinyprintf/tinyprintf.h"
 #include "utility/float.h"
 #include "utility/type_print.h"
 
-/* RTOS Header files */
+/* TI Drivers / RTOS Header files */
 #include <ti/drivers/GPIO.h>
+#include <ti_drivers_config.h>
+
+#include "sensor/stm32/stm32_i2c.h"
 
 #define DEBUG_PRINT 0
 #if DEBUG_PRINT
@@ -46,11 +46,10 @@
 // Static Global Declarations
 static char stm_i2c_comm_stack[TASK_CONFIG_STM_TASK_STACK_SIZE];
 
-// Global Declarations
-
 // Function Declarations
 void *stm_i2c_comm_task(void *arg0);
 
+// Task creation function for I2C slave
 void stm_i2c_comm_taskCreate(void) {
   pthread_t thread;
   pthread_attr_t pAttrs;

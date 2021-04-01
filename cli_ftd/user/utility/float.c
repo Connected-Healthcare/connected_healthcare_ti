@@ -1,8 +1,10 @@
 #include "utility/float.h"
 
+/* Standard Library Header files */
 #include <math.h>
 
-#include "tinyprintf.h"
+/* Utility Functions */
+#include "third_party/tinyprintf/tinyprintf.h"
 
 // https://www.microchip.com/forums/m293227.aspx
 // Only prints upto 2 decimal places

@@ -2,11 +2,14 @@
 
 /* Standard Library Header files */
 #include <stdint.h>
+#include <string.h>
 
+/* TI Drivers / RTOS Header files */
 #include "ti_drivers_config.h"
 #include <ti/drivers/I2C.h>
 
-#include "tinyprintf.h"
+/* Utility Functions */
+#include "third_party/tinyprintf/tinyprintf.h"
 #include "utility/float.h"
 #include "utility/type_convert.h"
 #include "utility/type_print.h"
@@ -49,13 +52,15 @@ static I2C_Params params;
 static I2C_Transaction transaction;
 static bool is_i2c_transaction_success;
 
-void stm32__init() {
+/* Initialization function for I2C slave */
+void stm32__init(void) {
   I2C_Params_init(&params);
   params.bitRate = I2C_100kHz;
   transaction.slaveAddress = STM32_7BIT_ADDRESS;
   is_i2c_transaction_success = true;
 }
 
+/* Getter functions for sensor data */
 uint32_t stm32__spec_co_gas_concentration(void) {
   uint8_t readBuf[ARR_SIZE] = {0};
   is_i2c_transaction_success =

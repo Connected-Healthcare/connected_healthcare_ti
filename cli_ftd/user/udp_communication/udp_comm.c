@@ -1,6 +1,7 @@
+#include "udp_communication/udp_comm.h"
+
 /* Standard Library Header files */
 #include <assert.h>
-#include <stddef.h>
 #include <string.h>
 
 /* POSIX Header files */
@@ -18,16 +19,15 @@
 #include <openthread/thread.h>
 #include <openthread/udp.h>
 
-/* TI-specific files */
-#include "ti_drivers_config.h"
+/* TI Drivers / RTOS Header files */
 #include <ti/drivers/GPIO.h>
+#include <ti_drivers_config.h>
 
-/* Third party tool files */
-#include "tinyprintf.h"
+/* Utility Functions */
+#include "third_party/tinyprintf/tinyprintf.h"
 #include "utility/float.h"
 
 #include "sensor/stm32/stm32_i2c.h"
-#include "udp_comm.h"
 
 /* GLOBAL MACRO DEFINITIONS */
 /* UDP Task Configs */
@@ -35,12 +35,12 @@
 #define MAX_UDP_MESSAGE_BUFF_LEN 1024
 
 /* FUNCTION DECLARATIONS */
-void *udp_comm_task(void *arg0);
+void *udp__comm_task(void *arg0);
 static void get_sensors_data(char *);
 
 /* UDP APIs */
-static void udp_comm_init(otInstance *aInstance);
-static void udp_comm_send(otInstance *aInstance);
+static void udp__comm_init(otInstance *aInstance);
+static void udp__comm_send(otInstance *aInstance);
 
 /* GLOBAL VARIABLES */
 /* Custom UDP Message */
@@ -51,9 +51,10 @@ static const uint16_t udp_port_num = 1234;
 char udp_final_message[MAX_UDP_MESSAGE_BUFF_LEN];
 
 /* UDP Task Configs */
-static const int TASK_CONFIG_UDP_COMM_TASK_PRIORITY = 3;
+static const int TASK_CONFIG_udp__comm_task_PRIORITY = 3;
 
-static void udp_comm_init(otInstance *aInstance) {
+/* Initialization function for UDP */
+static void udp__comm_init(otInstance *aInstance) {
   otError error = OT_ERROR_NONE;
   memset(&messageInfo, 0, sizeof(messageInfo));
   error = otUdpOpen(aInstance, &socket, NULL, NULL);
@@ -68,7 +69,8 @@ static void udp_comm_init(otInstance *aInstance) {
   messageInfo.mPeerPort = udp_port_num;
 }
 
-static void udp_comm_send(otInstance *aInstance) {
+/* Function to send data over OpenThread network via UDP */
+static void udp__comm_send(otInstance *aInstance) {
   static otMessage *udp_message;
 
   otError error = OT_ERROR_NONE;
@@ -144,13 +146,13 @@ static void get_sensors_data(char *udp_temp_msg_buff) {
           spec_co_relative_humidity, gps_lat, gps_long);
 }
 
-void *udp_comm_task(void *arg0) {
+void *udp__comm_task(void *arg0) {
   char udp_temp_msg_buff[512] = {0};
   OtRtosApi_lock();
   otError error;
   otInstance *aInstance = OtInstance_get();
   error = otIp6SetEnabled(aInstance, true); // Ifconfig up
-  udp_comm_init(aInstance);
+  udp__comm_init(aInstance);
   OtRtosApi_unlock();
 
   while (1) {
@@ -165,7 +167,7 @@ void *udp_comm_task(void *arg0) {
       get_sensors_data(udp_temp_msg_buff);
       strcat(udp_final_message, udp_temp_msg_buff);
       printf("BTN-1 pressed: Sent the Msg: %s\r\n", udp_final_message);
-      udp_comm_send(aInstance);
+      udp__comm_send(aInstance);
     }
     memset(udp_temp_msg_buff, 0, sizeof(udp_temp_msg_buff));
     memset(udp_final_message, 0, sizeof(udp_final_message));
@@ -173,7 +175,8 @@ void *udp_comm_task(void *arg0) {
   }
 }
 
-void udp_comm_taskCreate() {
+/* Creation function for the UDP application task */
+void udp__comm_taskCreate() {
   static char udp_comm_stack[TASK_CONFIG_UDP_COMM_TASK_STACK_SIZE];
   pthread_t thread;
   pthread_attr_t pAttrs;
@@ -187,7 +190,7 @@ void udp_comm_taskCreate() {
   retc = pthread_attr_setdetachstate(&pAttrs, PTHREAD_CREATE_DETACHED);
   assert(retc == 0);
 
-  priParam.sched_priority = TASK_CONFIG_UDP_COMM_TASK_PRIORITY;
+  priParam.sched_priority = TASK_CONFIG_udp__comm_task_PRIORITY;
   retc = pthread_attr_setschedparam(&pAttrs, &priParam);
   assert(retc == 0);
 
@@ -195,7 +198,7 @@ void udp_comm_taskCreate() {
                                TASK_CONFIG_UDP_COMM_TASK_STACK_SIZE);
   assert(retc == 0);
 
-  retc = pthread_create(&thread, &pAttrs, udp_comm_task, NULL);
+  retc = pthread_create(&thread, &pAttrs, udp__comm_task, NULL);
   assert(retc == 0);
 
   retc = pthread_attr_destroy(&pAttrs);

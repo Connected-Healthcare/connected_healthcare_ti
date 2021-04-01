@@ -70,9 +70,7 @@
 /* Private configuration Header files */
 #include "task_config.h"
 
-#include "user/heartbeat/heartbeat.h"
-
-#include "tinyprintf/tinyprintf_override.h"
+#include "user/tinyprintf/tinyprintf_override.h"
 
 #ifdef CC1352R1_LAUNCHXL
 #include "user/sensor/stm32/stm32_i2c.h"
@@ -121,7 +119,7 @@ int main(void) {
 
   cli_taskCreate();
 
-  udp_comm_taskCreate();
+  udp__comm_taskCreate();
 
   /* Start sys/bios, this will never return */
   BIOS_start();

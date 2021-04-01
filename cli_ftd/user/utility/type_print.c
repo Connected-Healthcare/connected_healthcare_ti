@@ -1,7 +1,10 @@
-#include "type_print.h"
-#include "utility/float.h"
+#include "utility/type_print.h"
 
+/* Standard Library Header files */
 #include <string.h>
+
+/* Utility Functions */
+#include "utility/float.h"
 
 #define DEBUG_PRINT 0
 #if DEBUG_PRINT
@@ -9,10 +12,6 @@
 #else
 #define debugPrintf(...)
 #endif
-
-/* Utility to print the given Identifier along with its data.
- * For example: GPS
- */
 
 void convert_float_and_print(float data, const char *identifier) {
   char buffer[12] = {0};

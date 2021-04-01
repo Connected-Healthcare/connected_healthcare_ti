@@ -50,9 +50,6 @@ set(USER_CLI_FTD_SOURCES
     "user/user.c"
     "user/tinyprintf/tinyprintf_override.c"
     "user/utility/float.c"
-    "user/udp_communication/udp_comm.c"
-    "user/heartbeat/heartbeat.c"
-    "user/heartbeat_logic/heartbeat_logic.c"
     "user/utility/type_convert.c"
     "user/utility/type_print.c"
 )
@@ -66,6 +63,9 @@ endif()
 # CC1352R1 specific code
 if (${TARGET_BOARD} STREQUAL "CC1352R1_LAUNCHXL")
 set(USER_CLI_FTD_SOURCES "${USER_CLI_FTD_SOURCES}"
+    "user/udp_communication/udp_comm.c"
+    "user/heartbeat/heartbeat_task.c"
+    "user/heartbeat/heartbeat.c"
     "user/sensor/stm32/stm32_i2c.c"
     "user/sensor/stm32/stm32_i2c_task.c"
 )
