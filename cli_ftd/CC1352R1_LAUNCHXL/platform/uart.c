@@ -143,7 +143,7 @@ otError otPlatUartEnable(void) {
   params.readDataMode = UART_DATA_BINARY;
   params.writeDataMode = UART_DATA_BINARY;
   params.readEcho = UART_ECHO_OFF;
-  params.baudRate = 115200;
+  params.baudRate = UART_BAUD_RATE;
   params.dataLength = UART_LEN_8;
   params.stopBits = UART_STOP_ONE;
   params.parityType = UART_PAR_NONE;

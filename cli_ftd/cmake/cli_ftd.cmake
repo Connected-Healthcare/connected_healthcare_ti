@@ -122,6 +122,8 @@ target_compile_definitions(${USER_PROJECT_NAME} PRIVATE
     TIOP_ENABLE_UART=1 
     DeviceFamily_CC13X2
     ${TARGET_BOARD}
+    BLUETOOTH=${BLUETOOTH}
+    UART_BAUD_RATE=${UART_BAUD_RATE}
 )
 
 target_include_directories(${USER_PROJECT_NAME} PRIVATE 
