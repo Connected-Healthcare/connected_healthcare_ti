@@ -20,7 +20,7 @@
 // Tasks
 // This 1ms task delay is kept to avoid hogging the CPU
 // This allows other tasks to run
-static const size_t TASK_DELAY = 1U * 1000U;
+static const size_t TASK_DELAY_MICROSECONDS = 1U * 5000U;
 
 // Defined in platform/uart.c
 extern bool PlatformUart_writeEnabled;
@@ -76,20 +76,21 @@ static void *tinyprintf_uart_task(void *arg) {
   char data[255] = {0};
   while (1) {
     if (PlatformUart_writeEnabled == false) {
-      usleep(TASK_DELAY);
+      usleep(TASK_DELAY_MICROSECONDS);
       continue;
     }
 
     bool recv = line_buffer__remove_line(&line_buffer, data, sizeof(data));
     if (!recv) {
-      usleep(TASK_DELAY);
+      usleep(TASK_DELAY_MICROSECONDS);
       continue;
     }
 
     // ! FIXME, We arent able to get a newline through the
     // `line_buffer__remove_line` api above
     sprintf(data, "%s\n", data);
-    otPlatUartSend((const uint8_t *)data, sizeof(data));
+    const uint16_t len = strlen(data);
+    otPlatUartSend((const uint8_t *)data, len);
     PlatformUart_writeEnabled = false;
   }
 
