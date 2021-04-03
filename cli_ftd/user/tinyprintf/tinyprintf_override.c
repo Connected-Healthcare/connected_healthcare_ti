@@ -1,7 +1,7 @@
 #include "tinyprintf/tinyprintf_override.h"
 
-#include "line_buffer.h"
-#include "tinyprintf.h"
+#include "third_party/line_buffer/line_buffer.h"
+#include "third_party/tinyprintf/tinyprintf.h"
 
 #include <openthread/platform/uart.h>
 #include <ti/drivers/UART.h>

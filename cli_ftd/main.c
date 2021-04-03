@@ -70,12 +70,10 @@
 /* Private configuration Header files */
 #include "task_config.h"
 
-#include "user/heartbeat/heartbeat.h"
-
-#include "tinyprintf/tinyprintf_override.h"
+#include "user/tinyprintf/tinyprintf_override.h"
 
 #ifdef CC1352R1_LAUNCHXL
-#include "sensor/stm32/stm32_i2c.h"
+#include "user/sensor/stm32/stm32_i2c.h"
 #endif
 #include "user/udp_communication/udp_comm.h"
 
@@ -92,6 +90,7 @@
  * @note This function should never return.
  */
 int main(void) {
+
   /* Call driver init functions */
   Board_initGeneral();
 
@@ -113,16 +112,14 @@ int main(void) {
 
 #ifdef CC1352R1_LAUNCHXL
   stm32__init();
-  heartbeat_taskCreate();
 #endif
 
 #ifdef CC1352P_2_LAUNCHXL
-  heartbeat_taskCreate();
 #endif
 
   cli_taskCreate();
 
-  udp_comm_taskCreate();
+  udp__comm_taskCreate();
 
   /* Start sys/bios, this will never return */
   BIOS_start();
