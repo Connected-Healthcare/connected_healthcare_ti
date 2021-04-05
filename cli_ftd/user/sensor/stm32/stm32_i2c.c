@@ -21,7 +21,7 @@
 #define debugPrintf(...)
 #endif
 
-#define I2C_DEBUG_PRINT 1
+#define I2C_DEBUG_PRINT 0
 #if I2C_DEBUG_PRINT
 #define i2c_debugPrintf(...) printf(__VA_ARGS__)
 #else
