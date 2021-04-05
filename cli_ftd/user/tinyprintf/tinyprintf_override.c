@@ -18,8 +18,6 @@
 #include <unistd.h>
 
 // Tasks
-// This 1ms task delay is kept to avoid hogging the CPU
-// This allows other tasks to run
 static const size_t TASK_DELAY_MICROSECONDS = 1U * 5000U;
 
 // Defined in platform/uart.c
