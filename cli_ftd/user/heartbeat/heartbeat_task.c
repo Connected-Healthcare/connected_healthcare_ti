@@ -110,17 +110,17 @@ void *heartbeat__task(void *arg0) {
 
   int result = begin();
   if (!result) {
-    printf("Sensor started!\r\n");
+    debugPrintf("Sensor started!\r\n");
   } else {
-    printf("Could not communicate with the sensor!!!\r\n");
+    debugPrintf("Could not communicate with the sensor!!!\r\n");
   }
-  printf("Configuring Sensor....\r\n");
+  debugPrintf("Configuring Sensor....\r\n");
   int error = configBpm(MODE_ONE); // Configuring just the BPM settings.
   if (!error) {
-    printf("Sensor configured.\r\n");
+    debugPrintf("Sensor configured.\r\n");
   } else {
-    printf("Error configuring sensor.\r\n");
-    printf("Error: %d\r\n", error);
+    debugPrintf("Error configuring sensor.\r\n");
+    debugPrintf("Error: %d\r\n", error);
   }
 
   // Data lags a bit behind the sensor, if you're finger is on the sensor when
@@ -132,7 +132,7 @@ void *heartbeat__task(void *arg0) {
 #if 1 == GPIO_DEBUG
     sleep(1);
     /* ignoring unslept return value */
-    printf("LED Toggle %ld \r\n", count++);
+    debugPrintf("LED Toggle %ld \r\n", count++);
 #endif
     GPIO_toggle(CONFIG_GPIO_GLED);
     body = readBpm();

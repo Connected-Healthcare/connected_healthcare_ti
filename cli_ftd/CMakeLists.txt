@@ -6,6 +6,9 @@ cmake_minimum_required(VERSION 3.17)
 # set(TARGET_BOARD "CC1352P_2_LAUNCHXL")
 set(TARGET_BOARD "CC1352R1_LAUNCHXL")
 
+set(UART_BAUD_RATE 9600) # 115200 (console) or 9600 (bluetooth)
+set(BLUETOOTH 1) # 1 or 0
+
 set(PROJECT_NAME "${TARGET_BOARD}_cli_ftd")
 option(TESTING OFF)
 
