@@ -47,7 +47,7 @@ static void get_sensors_data(char *);
 
 /* UDP APIs */
 static void udp__comm_init(otInstance *aInstance);
-static void udp__comm_send(otInstance *aInstance);
+static void udp__comm_send(otInstance *aInstance, char *);
 
 /* GLOBAL VARIABLES */
 static otUdpSocket socket;
@@ -72,9 +72,9 @@ static otUdpSocket socket;
  * d) Does not need to poll for messages from its parent
  */
 
+/* UDP Parameter Configs */
 static const char *udp_ipv6_add = "ff03::1";
 static const uint16_t udp_port_num = 1234;
-char udp_final_message[MAX_UDP_MESSAGE_BUFF_LEN];
 
 /* UDP Task Configs */
 static const int TASK_CONFIG_udp_comm_task_PRIORITY = 3;
@@ -108,7 +108,7 @@ static void udp__comm_init(otInstance *aInstance) {
 }
 
 /* Send data over OpenThread network via UDP */
-static void udp__comm_send(otInstance *aInstance) {
+static void udp__comm_send(otInstance *aInstance, char *udp_final_message) {
   otMessage *udp_message;
   otError error = OT_ERROR_NONE;
   otMessageInfo messageInfo;
@@ -194,7 +194,9 @@ static void get_sensors_data(char *udp_temp_msg_buff) {
 
 void *udp__comm_task(void *arg0) {
   char udp_temp_msg_buff[512] = {0};
+  char udp_final_message[MAX_UDP_MESSAGE_BUFF_LEN] = {0};
   static otDeviceRole curr_state;
+
   OtRtosApi_lock();
   otError error;
   otInstance *aInstance = OtInstance_get();
@@ -219,7 +221,7 @@ void *udp__comm_task(void *arg0) {
         get_sensors_data(udp_temp_msg_buff);
         strcat(udp_final_message, udp_temp_msg_buff);
         debugPrintf("Sent the Msg: %s\r\n", udp_final_message);
-        udp__comm_send(aInstance);
+        udp__comm_send(aInstance, udp_final_message);
 
       } else {
         // debugPrintf("Error: Cannot send as the device is in "
