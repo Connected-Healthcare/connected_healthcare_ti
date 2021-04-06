@@ -29,6 +29,13 @@
 
 #include "sensor/stm32/stm32_i2c.h"
 
+#define DEBUG_PRINT 1
+#if DEBUG_PRINT
+#define debugPrintf(...) printf(__VA_ARGS__)
+#else
+#define debugPrintf(...)
+#endif
+
 /* GLOBAL MACRO DEFINITIONS */
 /* UDP Task Configs */
 #define TASK_CONFIG_UDP_COMM_TASK_STACK_SIZE 4096
@@ -43,47 +50,86 @@ static void udp__comm_init(otInstance *aInstance);
 static void udp__comm_send(otInstance *aInstance);
 
 /* GLOBAL VARIABLES */
-/* Custom UDP Message */
-static otMessageInfo messageInfo;
 static otUdpSocket socket;
-static const char *udp_ipv6_add = "ff02::1";
+
+/*
+ * Reserved Multicast IPv6 Addresses:
+ * IPv6 Add.     Scope          Delivered To
+ * ff02::1  -  Link-Local  -  All FTDs and MEDs
+ * ff02::2  -  Link-Local  -  All FTDs
+ * ff03::1  -  Mesh-Local  -  All FTDs and MEDs
+ * ff03::2  -  Mesh-Local  -  All FTDs
+ *
+ * FTD - Full Thread Device:
+ * a) Always has its radio on
+ * b) Subscribes to the all-routers multicast address
+ * c) Maintains IPv6 address mappings
+ *
+ * MED - Minimal End Device:
+ * a) Does not subscribe to the all-routers multicast address
+ * b) Forwards all messages to its Parent
+ * c) Transceiver always on
+ * d) Does not need to poll for messages from its parent
+ */
+
+static const char *udp_ipv6_add = "ff03::1";
 static const uint16_t udp_port_num = 1234;
 char udp_final_message[MAX_UDP_MESSAGE_BUFF_LEN];
 
 /* UDP Task Configs */
-static const int TASK_CONFIG_udp__comm_task_PRIORITY = 3;
+static const int TASK_CONFIG_udp_comm_task_PRIORITY = 3;
 
-/* Initialization function for UDP */
+/* UDP Receive Callback */
+void handleUdpReceive(void *aContext, otMessage *udp_message,
+                      const otMessageInfo *aMessageInfo) {
+  OT_UNUSED_VARIABLE(aContext);
+  OT_UNUSED_VARIABLE(aMessageInfo);
+  uint16_t length = otMessageGetLength(udp_message);
+  uint16_t msg_offset;
+  char udp_decoded_buffer[length];
+  msg_offset = otMessageGetOffset(udp_message);
+  length = otMessageRead(udp_message, msg_offset, udp_decoded_buffer, length);
+  debugPrintf("UDP Received Message: %s\r\n", udp_decoded_buffer);
+}
+
+/* Initialize UDP */
 static void udp__comm_init(otInstance *aInstance) {
   otError error = OT_ERROR_NONE;
-  memset(&messageInfo, 0, sizeof(messageInfo));
-  error = otUdpOpen(aInstance, &socket, NULL, NULL);
+  otSockAddr sockaddr;
+
+  memset(&socket, 0, sizeof(socket));
+  memset(&sockaddr, 0, sizeof(sockaddr));
+
+  sockaddr.mPort = udp_port_num;
+
+  error = otUdpOpen(aInstance, &socket, handleUdpReceive, NULL);
+
+  error = otUdpBind(&socket, &sockaddr);
+}
+
+/* Send data over OpenThread network via UDP */
+static void udp__comm_send(otInstance *aInstance) {
+  otMessage *udp_message;
+  otError error = OT_ERROR_NONE;
+  otMessageInfo messageInfo;
 
   /* Specific node address */
   // error = otIp6AddressFromString("fe80:0:0:0:cc95:ed45:96a5:fcc7",
   //  &messageInfo.mPeerAddr);
 
-  /* Send the UDP message to all link local FTDs: */
+  memset(&messageInfo, 0, sizeof(messageInfo));
+
   error = otIp6AddressFromString((const void *)udp_ipv6_add,
                                  &messageInfo.mPeerAddr);
   messageInfo.mPeerPort = udp_port_num;
-}
-
-/* Function to send data over OpenThread network via UDP */
-static void udp__comm_send(otInstance *aInstance) {
-  static otMessage *udp_message;
-
-  otError error = OT_ERROR_NONE;
 
   udp_message = otUdpNewMessage(aInstance, NULL);
   otMessageAppend(udp_message, (const void *)udp_final_message,
                   (uint16_t)strlen(udp_final_message));
   error = otUdpSend(&socket, udp_message, &messageInfo);
-  if (error != OT_ERROR_NONE && udp_message != NULL) {
-    otMessageFree(udp_message);
-  }
 }
 
+/*  Get data from I2C Slave (B-L475E-IOT01A) */
 static void get_sensors_data(char *udp_temp_msg_buff) {
   float hts221_temperature;
   float hts221_humidity;
@@ -148,10 +194,11 @@ static void get_sensors_data(char *udp_temp_msg_buff) {
 
 void *udp__comm_task(void *arg0) {
   char udp_temp_msg_buff[512] = {0};
+  static otDeviceRole curr_state;
   OtRtosApi_lock();
   otError error;
   otInstance *aInstance = OtInstance_get();
-  error = otIp6SetEnabled(aInstance, true); // Ifconfig up
+  error = otIp6SetEnabled(aInstance, true); // ifconfig up
   udp__comm_init(aInstance);
   OtRtosApi_unlock();
 
@@ -159,23 +206,33 @@ void *udp__comm_task(void *arg0) {
     /* For now, sending of all sensor data is done only on button press.
      * It will be removed during final stage and the data will get sent
      * automatically */
-    if (!GPIO_read(CONFIG_GPIO_BTN1)) {
+    // if (!GPIO_read(CONFIG_GPIO_BTN1)) {
+    if (1) {
       OtRtosApi_lock();
       snprintf(udp_final_message, sizeof(udp_final_message), "RLOC16:%04x,",
                otThreadGetRloc16(aInstance));
+      curr_state = otThreadGetDeviceRole(aInstance);
       OtRtosApi_unlock();
-      get_sensors_data(udp_temp_msg_buff);
-      strcat(udp_final_message, udp_temp_msg_buff);
-      printf("BTN-1 pressed: Sent the Msg: %s\r\n", udp_final_message);
-      udp__comm_send(aInstance);
+      if (OT_DEVICE_ROLE_CHILD == curr_state ||
+          OT_DEVICE_ROLE_ROUTER == curr_state ||
+          curr_state == OT_DEVICE_ROLE_LEADER) {
+        get_sensors_data(udp_temp_msg_buff);
+        strcat(udp_final_message, udp_temp_msg_buff);
+        debugPrintf("Sent the Msg: %s\r\n", udp_final_message);
+        udp__comm_send(aInstance);
+
+      } else {
+        // debugPrintf("Error: Cannot send as the device is in "
+        //             "Disabled/Detached/Invalid state.\r\n");
+      }
     }
     memset(udp_temp_msg_buff, 0, sizeof(udp_temp_msg_buff));
     memset(udp_final_message, 0, sizeof(udp_final_message));
-    sleep(1);
+    sleep(5);
   }
 }
 
-/* Creation function for the UDP application task */
+/* Create UDP application task */
 void udp__comm_taskCreate() {
   static char udp_comm_stack[TASK_CONFIG_UDP_COMM_TASK_STACK_SIZE];
   pthread_t thread;
@@ -190,7 +247,7 @@ void udp__comm_taskCreate() {
   retc = pthread_attr_setdetachstate(&pAttrs, PTHREAD_CREATE_DETACHED);
   assert(retc == 0);
 
-  priParam.sched_priority = TASK_CONFIG_udp__comm_task_PRIORITY;
+  priParam.sched_priority = TASK_CONFIG_udp_comm_task_PRIORITY;
   retc = pthread_attr_setschedparam(&pAttrs, &priParam);
   assert(retc == 0);
 
