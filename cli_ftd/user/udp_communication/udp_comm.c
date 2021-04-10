@@ -73,8 +73,10 @@ static otUdpSocket socket;
  */
 
 /* UDP Parameter Configs */
-static const char *udp_ipv6_add = "ff03::1";
-static const uint16_t udp_port_num = 1234;
+static const char *UDP_IPV6_ADD = "ff03::1";
+static const uint16_t UDP_PORT_NUM = 1234;
+static const int UDP_MESSAGE_FIRE_TIMER_SECONDS =
+    5; // Send UDP message every 5 seconds
 
 /* UDP Task Configs */
 static const int TASK_CONFIG_udp_comm_task_PRIORITY = 3;
@@ -100,11 +102,13 @@ static void udp__comm_init(otInstance *aInstance) {
   memset(&socket, 0, sizeof(socket));
   memset(&sockaddr, 0, sizeof(sockaddr));
 
-  sockaddr.mPort = udp_port_num;
+  sockaddr.mPort = UDP_PORT_NUM;
 
   error = otUdpOpen(aInstance, &socket, handleUdpReceive, NULL);
+  assert(error == OT_ERROR_NONE);
 
   error = otUdpBind(&socket, &sockaddr);
+  assert(error == OT_ERROR_NONE);
 }
 
 /* Send data over OpenThread network via UDP */
@@ -119,14 +123,19 @@ static void udp__comm_send(otInstance *aInstance, char *udp_final_message) {
 
   memset(&messageInfo, 0, sizeof(messageInfo));
 
-  error = otIp6AddressFromString((const void *)udp_ipv6_add,
+  error = otIp6AddressFromString((const void *)UDP_IPV6_ADD,
                                  &messageInfo.mPeerAddr);
-  messageInfo.mPeerPort = udp_port_num;
+  assert(error == OT_ERROR_NONE);
+
+  messageInfo.mPeerPort = UDP_PORT_NUM;
 
   udp_message = otUdpNewMessage(aInstance, NULL);
-  otMessageAppend(udp_message, (const void *)udp_final_message,
-                  (uint16_t)strlen(udp_final_message));
+  error = otMessageAppend(udp_message, (const void *)udp_final_message,
+                          (uint16_t)strlen(udp_final_message));
+  assert(error == OT_ERROR_NONE);
+
   error = otUdpSend(&socket, udp_message, &messageInfo);
+  assert(error == OT_ERROR_NONE);
 }
 
 /*  Get data from I2C Slave (B-L475E-IOT01A) */
@@ -200,7 +209,10 @@ void *udp__comm_task(void *arg0) {
   OtRtosApi_lock();
   otError error;
   otInstance *aInstance = OtInstance_get();
+
   error = otIp6SetEnabled(aInstance, true); // ifconfig up
+  assert(error == OT_ERROR_NONE);
+
   udp__comm_init(aInstance);
   OtRtosApi_unlock();
 
@@ -230,7 +242,7 @@ void *udp__comm_task(void *arg0) {
     }
     memset(udp_temp_msg_buff, 0, sizeof(udp_temp_msg_buff));
     memset(udp_final_message, 0, sizeof(udp_final_message));
-    sleep(5);
+    sleep(UDP_MESSAGE_FIRE_TIMER_SECONDS);
   }
 }
 
