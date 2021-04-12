@@ -29,7 +29,7 @@
 
 #include "sensor/stm32/stm32_i2c.h"
 
-#define DEBUG_PRINT 1
+#define DEBUG_PRINT 0
 #if DEBUG_PRINT
 #define debugPrintf(...) printf(__VA_ARGS__)
 #else
@@ -205,14 +205,11 @@ void *udp__comm_task(void *arg0) {
   OtRtosApi_unlock();
 
   while (1) {
-    /* For now, sending of all sensor data is done only on button press.
-     * It will be removed during final stage and the data will get sent
-     * automatically */
+
     // if (!GPIO_read(CONFIG_GPIO_BTN1)) {
     if (1) {
       OtRtosApi_lock();
-      snprintf(udp_final_message, sizeof(udp_final_message), "RLOC16:%04x,",
-               otThreadGetRloc16(aInstance));
+      sprintf(udp_final_message, "RLOC16:%04x,", otThreadGetRloc16(aInstance));
       curr_state = otThreadGetDeviceRole(aInstance);
       OtRtosApi_unlock();
       if (OT_DEVICE_ROLE_CHILD == curr_state ||
