@@ -27,6 +27,7 @@
 #include "third_party/tinyprintf/tinyprintf.h"
 
 #include "sensor/aggregate.h"
+#include "tinyprintf/bluetooth_wrapper.h"
 
 #define DEBUG_PRINT 0
 #if DEBUG_PRINT
@@ -157,9 +158,14 @@ void *udp__comm_task(void *arg0) {
       if (OT_DEVICE_ROLE_CHILD == curr_state ||
           OT_DEVICE_ROLE_ROUTER == curr_state ||
           curr_state == OT_DEVICE_ROLE_LEADER) {
+
         get_sensors_data(udp_temp_msg_buff);
         strcat(udp_final_message, udp_temp_msg_buff);
+
         debugPrintf("Sent the Msg: %s\r\n", udp_final_message);
+
+        // NOTE, We just need the sensor data, not the id
+        BT_SENSOR_WRITE(udp_temp_msg_buff);
         udp__comm_send(aInstance, udp_final_message);
 
       } else {
