@@ -69,6 +69,8 @@ set(USER_CLI_FTD_SOURCES "${USER_CLI_FTD_SOURCES}"
     "user/udp_communication/udp_comm.c"
     "user/heartbeat/heartbeat_task.c"
     "user/heartbeat/heartbeat.c"
+
+    "user/sensor/aggregate.c"
     "user/sensor/stm32/stm32_i2c.c"
     "user/sensor/stm32/stm32_i2c_task.c"
 )
