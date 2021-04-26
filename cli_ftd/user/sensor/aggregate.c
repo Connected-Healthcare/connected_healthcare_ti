@@ -6,8 +6,9 @@
 
 #include "utility/float.h"
 
-// Third party
+/* Utility Functions */
 #include "third_party/tinyprintf/tinyprintf.h"
+#include "tinyprintf/bluetooth_wrapper.h"
 
 void get_sensors_data(char *sensor_data) {
   float hts221_temperature;
@@ -34,6 +35,7 @@ void get_sensors_data(char *sensor_data) {
   float gps_data[2] = {0.0};
   char gps_lat[32] = {0};
   char gps_long[32] = {0};
+  char hb_debug[32] = {0};
 
   hts221_temperature = stm32__hts221_temperature();
   hts221_humidity = stm32__hts221_humidity();
@@ -51,7 +53,8 @@ void get_sensors_data(char *sensor_data) {
   vl53L0x_time_of_flight = stm32__time_of_flight();
 
   stm32__heartbeat_data(hb_data_arr);
-
+  sprintf(hb_debug, "hb_status: %d\r\n", hb_data_arr[3]);
+  BT_DEBUG_WRITE(hb_debug);
   spec_co_gas_concentration = stm32__spec_co_gas_concentration();
   spec_co_temperature = stm32__spec_co_temperature();
   spec_co_relative_humidity = stm32__spec_co_humidity();
