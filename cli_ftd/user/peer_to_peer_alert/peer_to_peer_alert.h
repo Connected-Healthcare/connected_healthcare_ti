@@ -11,7 +11,7 @@
 #include "third_party/tinyprintf/tinyprintf.h"
 #include "tinyprintf/bluetooth_wrapper.h"
 
-/* Process the incoming UDP message from peer nodes */
+/* Process the incoming UDP message from adjacent peer nodes */
 void peer_to_peer__process_udp_msg(char *udp_msg);
 
 enum UDP_MESSAGE_INDEX_DEFINITION {
