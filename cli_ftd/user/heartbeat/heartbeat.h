@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <string.h>
 
-// /* POSIX Header files */
+/* POSIX Header files */
 #include <unistd.h>
 
 /* TI Drivers / RTOS Header files */

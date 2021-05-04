@@ -73,6 +73,7 @@ set(USER_CLI_FTD_SOURCES "${USER_CLI_FTD_SOURCES}"
     "user/sensor/aggregate.c"
     "user/sensor/stm32/stm32_i2c.c"
     "user/sensor/stm32/stm32_i2c_task.c"
+    "user/peer_to_peer_alert/peer_to_peer_alert.c"
 )
 endif()
 
