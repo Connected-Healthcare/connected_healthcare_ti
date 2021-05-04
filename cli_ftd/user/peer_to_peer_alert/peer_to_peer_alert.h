@@ -7,9 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* POSIX Header files */
-#include <unistd.h>
-
 /* Utility Functions */
 #include "third_party/tinyprintf/tinyprintf.h"
 #include "tinyprintf/bluetooth_wrapper.h"
