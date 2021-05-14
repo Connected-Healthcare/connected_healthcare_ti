@@ -10,6 +10,7 @@
 
 /* Utility Functions */
 #include "third_party/tinyprintf/tinyprintf.h"
+#include "tinyprintf/bluetooth_wrapper.h"
 #include "utility/float.h"
 #include "utility/type_convert.h"
 #include "utility/type_print.h"
@@ -19,13 +20,6 @@
 #define debugPrintf(...) printf(__VA_ARGS__)
 #else
 #define debugPrintf(...)
-#endif
-
-#define I2C_DEBUG_PRINT 0
-#if I2C_DEBUG_PRINT
-#define i2c_debugPrintf(...) printf(__VA_ARGS__)
-#else
-#define i2c_debugPrintf(...)
 #endif
 
 // Constants
@@ -195,7 +189,7 @@ void stm32__gps_data(float data_arr[]) {
 bool stm32__write_data(uint8_t write_address, uint8_t data) {
   I2C_Handle handle = I2C_open(CONFIG_I2C_0, &params);
   if (!handle) {
-    i2c_debugPrintf("I2C did not open\r\n");
+    BT_DEBUG_WRITE("I2C did not open\r\n");
     return false;
   }
 
@@ -210,11 +204,11 @@ bool stm32__write_data(uint8_t write_address, uint8_t data) {
 
   bool ret = I2C_transfer(handle, &transaction);
   if (!ret) {
-    i2c_debugPrintf("I2C Unsuccessful transfer\r\n");
+    BT_DEBUG_WRITE("I2C Unsuccessful transfer\r\n");
     I2C_close(handle);
     return false;
   }
-  // i2c_debugPrintf("Status: %d\r\n", transaction.status);
+  // BT_DEBUG_WRITE("Status: %d\r\n", transaction.status);
 
   I2C_close(handle);
   return true;
@@ -224,7 +218,7 @@ bool stm32__read_data(uint8_t write_address, uint8_t readBuf[],
                       uint32_t readCount) {
   I2C_Handle handle = I2C_open(CONFIG_I2C_0, &params);
   if (!handle) {
-    i2c_debugPrintf("I2C did not open\r\n");
+    BT_DEBUG_WRITE("I2C did not open\r\n");
     return false;
   }
 
@@ -239,11 +233,11 @@ bool stm32__read_data(uint8_t write_address, uint8_t readBuf[],
 
   bool ret = I2C_transfer(handle, &transaction);
   if (!ret) {
-    i2c_debugPrintf("I2C Unsuccessful transfer\r\n");
+    BT_DEBUG_WRITE("I2C Unsuccessful transfer\r\n");
     I2C_close(handle);
     return false;
   }
-  // i2c_debugPrintf("Status: %d\r\n", transaction.status);
+  // BT_DEBUG_WRITE("Status: %d\r\n", transaction.status);
 
   I2C_close(handle);
   return true;

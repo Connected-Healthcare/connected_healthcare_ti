@@ -25,9 +25,12 @@
 
 /* Utility Functions */
 #include "third_party/tinyprintf/tinyprintf.h"
-
-#include "sensor/aggregate.h"
 #include "tinyprintf/bluetooth_wrapper.h"
+
+/* Sensor Data Getter Functions */
+#include "sensor/aggregate.h"
+/* Peer to Peer Alert processing Functions */
+#include "peer_to_peer_alert/peer_to_peer_alert.h"
 
 #define DEBUG_PRINT 0
 #if DEBUG_PRINT
@@ -36,10 +39,13 @@
 #define debugPrintf(...)
 #endif
 
+#define SIMULATED_TI_BOARD 0
+
 /* GLOBAL MACRO DEFINITIONS */
 /* UDP Task Configs */
 #define TASK_CONFIG_UDP_COMM_TASK_STACK_SIZE 4096
 #define MAX_UDP_MESSAGE_BUFF_LEN 1024
+#define UDP_SEND_DATA_TIMER_SECONDS 5
 
 /* FUNCTION DECLARATIONS */
 void *udp__comm_task(void *arg0);
@@ -89,12 +95,15 @@ void handleUdpReceive(void *aContext, otMessage *udp_message,
   msg_offset = otMessageGetOffset(udp_message);
   length = otMessageRead(udp_message, msg_offset, udp_decoded_buffer, length);
   debugPrintf("UDP Received Message: %s\r\n", udp_decoded_buffer);
+  udp_decoded_buffer[strlen(udp_decoded_buffer)] = '\0';
+  peer_to_peer__process_udp_msg(udp_decoded_buffer);
 }
 
 /* Initialize UDP */
 static void udp__comm_init(otInstance *aInstance) {
   otError error = OT_ERROR_NONE;
   otSockAddr sockaddr;
+  char error_msg[128] = {0};
 
   memset(&socket, 0, sizeof(socket));
   memset(&sockaddr, 0, sizeof(sockaddr));
@@ -102,10 +111,19 @@ static void udp__comm_init(otInstance *aInstance) {
   sockaddr.mPort = udp_port_num;
 
   error = otUdpOpen(aInstance, &socket, handleUdpReceive, NULL);
-  error = otUdpBind(&socket, &sockaddr);
+  if (error != OT_ERROR_NONE) {
+    strcpy(error_msg, otThreadErrorToString(error));
+    strcat(error_msg, " error. UDP open failed\r\n");
+    BT_DEBUG_WRITE(error_msg);
+  }
 
-  // TODO Ganesh, Check errors
-  (void)error; // remove statement when error check
+  memset(error_msg, 0, sizeof(error_msg));
+  error = otUdpBind(&socket, &sockaddr);
+  if (error != OT_ERROR_NONE) {
+    strcpy(error_msg, otThreadErrorToString(error));
+    strcat(error_msg, " error. UDP bind failed\r\n");
+    BT_DEBUG_WRITE(error_msg);
+  }
 }
 
 /* Send data over OpenThread network via UDP */
@@ -113,6 +131,7 @@ static void udp__comm_send(otInstance *aInstance, char *udp_final_message) {
   otMessage *udp_message;
   otError error = OT_ERROR_NONE;
   otMessageInfo messageInfo;
+  char error_msg[128] = {0};
 
   /* Specific node address */
   // error = otIp6AddressFromString("fe80:0:0:0:cc95:ed45:96a5:fcc7",
@@ -122,6 +141,13 @@ static void udp__comm_send(otInstance *aInstance, char *udp_final_message) {
 
   error = otIp6AddressFromString((const void *)udp_ipv6_add,
                                  &messageInfo.mPeerAddr);
+  if (error != OT_ERROR_NONE) {
+    strcpy(error_msg, otThreadErrorToString(error));
+    strcat(error_msg, " error. IPv6 extraction failed\r\n");
+    BT_DEBUG_WRITE(error_msg);
+  }
+  memset(error_msg, 0, sizeof(error_msg));
+
   messageInfo.mPeerPort = udp_port_num;
 
   udp_message = otUdpNewMessage(aInstance, NULL);
@@ -129,21 +155,27 @@ static void udp__comm_send(otInstance *aInstance, char *udp_final_message) {
                   (uint16_t)strlen(udp_final_message));
   error = otUdpSend(&socket, udp_message, &messageInfo);
 
-  // TODO Ganesh, Check errors
-  (void)error; // remove statement when error check
+  if (error != OT_ERROR_NONE) {
+    strcpy(error_msg, otThreadErrorToString(error));
+    strcat(error_msg, " error. UDP send failed\r\n");
+    BT_DEBUG_WRITE(error_msg);
+  }
 }
 
 void *udp__comm_task(void *arg0) {
   char udp_temp_msg_buff[512] = {0};
   char udp_final_message[MAX_UDP_MESSAGE_BUFF_LEN] = {0};
+  char error_msg[128] = {0};
   static otDeviceRole curr_state;
 
   OtRtosApi_lock();
   otInstance *aInstance = OtInstance_get();
   otError error = otIp6SetEnabled(aInstance, true); // ifconfig up
-  // TODO Ganesh, Check error
-  (void)error; // remove statement when error check
-
+  if (error != OT_ERROR_NONE) {
+    strcpy(error_msg, otThreadErrorToString(error));
+    strcat(error_msg, " error. ifconfig failed\r\n");
+    BT_DEBUG_WRITE(error_msg);
+  }
   udp__comm_init(aInstance);
   OtRtosApi_unlock();
 
@@ -159,13 +191,20 @@ void *udp__comm_task(void *arg0) {
           OT_DEVICE_ROLE_ROUTER == curr_state ||
           curr_state == OT_DEVICE_ROLE_LEADER) {
 
+#if SIMULATED_TI_BOARD == 0
         get_sensors_data(udp_temp_msg_buff);
+#else
+        /* Simulated data for neighboring TI nodes */
+        strcpy(udp_temp_msg_buff,
+               "30.29,47.79,30.50,1013.96,285,-234,-397,-4,-31,1027,1540,-2590,"
+               "350,1482,43,60,1476,60,3719.95,12154.77");
+        udp_temp_msg_buff[strlen(udp_temp_msg_buff)] = '\0';
+#endif
         strcat(udp_final_message, udp_temp_msg_buff);
 
         debugPrintf("Sent the Msg: %s\r\n", udp_final_message);
 
-        // NOTE, We just need the sensor data, not the id
-        BT_SENSOR_WRITE(udp_temp_msg_buff);
+        BT_SENSOR_WRITE(udp_final_message);
         udp__comm_send(aInstance, udp_final_message);
 
       } else {
@@ -175,7 +214,7 @@ void *udp__comm_task(void *arg0) {
     }
     memset(udp_temp_msg_buff, 0, sizeof(udp_temp_msg_buff));
     memset(udp_final_message, 0, sizeof(udp_final_message));
-    sleep(5);
+    sleep(UDP_SEND_DATA_TIMER_SECONDS);
   }
 }
 
